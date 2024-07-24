@@ -36,4 +36,10 @@ smrt.rtsolver.waveform\_model module
    :members:
    :show-inheritance:
 
+smrt.rtsolver.iterative_first module
+-------------------------
+
+.. automodule:: smrt.rtsolver.iterative_first
+   :members:
+   :show-inheritance:
 
