@@ -103,6 +103,25 @@ class ReflectorBackscatter(Substrate):
 
         return diffuse_refl_coeff
 
+    def diffuse_reflection_matrix(self, frequency, eps_1, mu_s, mu_i, dphi, npol):
+
+        assert mu_s is mu_i
+
+        if isinstance(self.backscattering_coefficient, dict):  # we have a dictionary with polarization
+            diffuse_refl_coeff = smrt_matrix.zeros((npol, len(mu_i)))
+
+            coef = 1 / (4 * np.pi * mu_i)    # SMRT requires scattering coefficient / 4 * pi
+
+            diffuse_refl_coeff[0] = coef * self._get_refl(self.backscattering_coefficient['VV'], mu_i)
+            diffuse_refl_coeff[1] = coef * self._get_refl(self.backscattering_coefficient['HH'], mu_i)
+
+        elif self.backscattering_coefficient is not None:
+            raise SMRTError("backscattering_coefficient must be a dictionary with keys VV and HH")
+        else:
+            diffuse_refl_coeff = smrt_matrix(0)
+
+        return diffuse_refl_coeff
+
     def emissivity_matrix(self, frequency, eps_1, mu1, npol):
 
         if self.specular_reflection is None and self.backscattering_coefficient is None:

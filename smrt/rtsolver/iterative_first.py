@@ -88,9 +88,8 @@ class IterativeFirst(object):
 
         self.substrate = snowpack.substrate
 
-        if snowpack.substrate is not None:
+        if snowpack.substrate is not None and snowpack.substrate.permittivity(sensor.frequency) is not None:
             self.substrate_permittivity = self.substrate.permittivity(sensor.frequency)
-
             if self.substrate_permittivity.imag < 1e-8:
                 smrt_warn("the permittivity of the substrate has a too small imaginary part for reliable results")
                 self.thickness.append(1e10)
@@ -135,15 +134,15 @@ class IterativeFirst(object):
 
         # get total intensity from the three contributions
         # first index is the number of mu
-        total_I = I[:, 0] + I[:, 1] + I[:, 2]
+        total_I = I[:, 0] + I[:, 1] + I[:, 2] + I[:, 3]
 
         if self.return_contributions:
             # add total to the intensity array
-            intensity = np.array([total_I, I[:, 0], I[:, 1], I[:, 2]])
+            intensity = np.array([total_I, I[:, 0], I[:, 1], I[:, 2], I[:, 3]])
             return make_result(
                 sensor,
                 intensity,
-                coords=[("contribution", ["total", "direct_backscatter", "reflection_backscatter", "double_bounce"])]
+                coords=[("contribution", ["total", "direct_backscatter", "reflection_backscatter", "double_bounce", 'zeroth'])]
                 + coords,
                 other_data=other_data,
             )
@@ -180,7 +179,7 @@ class IterativeFirst(object):
         mus = interface_l.mu
 
         # 3 for the number of contribution for the first order backscatter
-        intensity_up = np.zeros((len_mu, 3, npol, npol))
+        intensity_up = np.zeros((len_mu, 4, npol, npol))
         optical_depth = 0
         for l in range(nlayer):
             # check scat albedo for validity of iterative solution
@@ -214,8 +213,9 @@ class IterativeFirst(object):
                 ]
             )
 
-            # phases = abs2(emmodels[l].phase(np.array([mu[l], -mu[l]]).squeeze(), np.array([mu[l], -mu[l]]).squeeze(),
-            #                            np.pi, npol).values.squeeze())
+            # 1/4pi normalization of the RT equation for SMRT
+            # applied to phase here, interface and subsrate already have the smrt_norm
+            phases = phases / (4 * np.pi)
 
             index_comb = np.array(np.meshgrid(range(0, npol), range(0, npol))).T.reshape(-1, 2)
 
@@ -273,9 +273,9 @@ class IterativeFirst(object):
 
                 I1_2B = (thickness[l] * gamma2 / mu * (P_bi_down @ Rbottom_coh_m + Rbottom_coh_m @ P_bi_up)) @ I_l
 
-                I1_mu = np.array([I1_back, I1_ref_back, I1_2B])
+                I1_mu = np.array([I1_back, I1_ref_back, I1_2B, I0_mu])
 
-                I.append(I1_mu + I0_mu)
+                I.append(I1_mu)
 
             I = np.array(I)
             # add order and transmission upward
@@ -283,7 +283,7 @@ class IterativeFirst(object):
 
             # intensity in the layer transmitted downward for upper layer with one way attenuation
             # one way attenuation??? sqrt of gamma2?
-            I_l = np.matmul(Tbottom_coh_m, (I_l * np.sqrt(gamma2)))
+            I_l = np.matmul(Tbottom_coh_m, (I_l * gamma2))
 
         if self.substrate is None and optical_depth < 5:
             smrt_warn(
@@ -297,7 +297,7 @@ class IterativeFirst(object):
         intensity = np.matmul(get_np_matrix(interface_l.Ttop_coh[0], npol), intensity_up)
 
         # 1/4pi normalization of the RT equation like DORT
-        return intensity / (4 * np.pi)
+        return intensity
 
 
 def get_np_matrix(smrt_m, npol):
