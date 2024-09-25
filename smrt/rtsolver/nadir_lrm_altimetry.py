@@ -4,7 +4,7 @@ import scipy.signal
 
 from smrt.core.globalconstants import C_SPEED
 from smrt.core.error import SMRTError, smrt_warn
-from smrt.core.result import ActiveResult
+from smrt.core.result import AltimetryResult
 from smrt.rtsolver.waveform_model import Brown1977
 
 import xarray as xr
@@ -44,7 +44,7 @@ class NadirLRMAltimetry(object):
     _broadcast_capability = {}  # "theta_inc", "polarization_inc", "theta", "phi", "polarization"}
 
     def __init__(self, waveform_model=None, oversampling=10, return_oversampled=False, skip_pfs_convolution=False,
-                 return_contributions=False, theta_inc_sampling=1, return_theta_inc_sampling=False, error_handling="exception"):
+                 return_contributions=False, theta_inc_sampling=8, return_theta_inc_sampling=False, error_handling="exception"):
         # """
 
         # """
@@ -144,9 +144,9 @@ class NadirLRMAltimetry(object):
                 total = np.sum(waveform, axis=0)  # compute the total
 
             waveform = np.append(waveform, total[None, :], axis=0)  # add the total
-            res = ActiveResult(waveform[:, :, None, None], coords=[('contribution', ['surface', 'interfaces', 'volume', 'total'])] + coords)
+            res = AltimetryResult(waveform[:, :, None, None], coords=[('contribution', ['surface', 'interfaces', 'volume', 'total'])] + coords)
         else:
-            res = ActiveResult(waveform[:, None, None], coords=coords)
+            res = AltimetryResult(waveform[:, None, None], coords=coords)
 
         if len(self.z_gate) >= len(t_gate):
             # shorten
@@ -178,7 +178,7 @@ class NadirLRMAltimetry(object):
                 # we've no PFS, we need numerical integration
                 pfs = self.PFS_numerical(t_gate)
 
-            # now take into account the ptr + pdf
+            # now take into account the PTR + PDF assuming Gaussian PTR and PDF
             if (self.sensor.pulse_sigma > 0) or (sigma_surface > 0):
                 gaussian_norm = 0.3989422804014328
                 sigma_c = np.sqrt(self.sensor.pulse_sigma**2 + (2 * sigma_surface / C_SPEED)**2)
