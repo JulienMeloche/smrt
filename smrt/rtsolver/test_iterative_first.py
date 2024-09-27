@@ -10,6 +10,7 @@ from smrt.core.error import SMRTWarning
 from smrt.interface.transparent import Transparent
 from smrt.emmodel.nonscattering import NonScattering
 from smrt.rtsolver.iterative_first import IterativeFirst
+from smrt.core.fresnel import snell_angle
 
 
 def setup_snowpack():
@@ -92,10 +93,11 @@ def test_shallow_snowpack():
 
 
 def test_infinite_pack():
-    # from Ghi thesis p43, setup an infinite snowpack
+    # from Ghi thesis p43, setup an infinite snowpack with transparent interface
     # also from ulaby et al 2014 (11.75) d -> inf so gamma2 --> 0
-
-    # sigma = (4 * pi * mu)/ (2 * ke)   * direct backscatter (phase function * I_i /4*pi)
+    # in this specific case
+    # sigma = (1 - 0)/(2 * ke)  * (phase function * (T @ I_i * dense_factor))
+    # interface transparent so T is 1
     # I_i = 1 for VV and HH
     sp = setup_inf_snowpack()
     theta = [30]
@@ -107,12 +109,12 @@ def test_infinite_pack():
 
     mu = np.cos(sensor.theta)
     emmodels = make_emmodel("iba", sensor, sp.layers[0])
-    # direct backscatter (phase function * 1)
-    phase = emmodels.phase(-mu, mu, np.pi, 2).values.squeeze()
+    # direct backscatter (phase function * 1 * dense snow factor)
+    dense_factor = (1/emmodels.effective_permittivity().real) * (mu/snell_angle(1, emmodels.effective_permittivity().real, mu))
+    phase = emmodels.phase(-mu, mu, np.pi, 2).values.squeeze() * dense_factor
 
     # should be equal to the phase function * 1
     scattering_test = res.sigmaVV() * 2 * ke / mu 
-    print(phase[0,0], scattering_test)
     np.testing.assert_allclose(phase[0, 0], scattering_test)
 
 

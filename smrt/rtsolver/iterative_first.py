@@ -81,22 +81,22 @@ class IterativeFirst(object):
                 + "feature is needed."
             )
 
-        self.thickness = snowpack.layer_thicknesses
-        self.temperature = snowpack.profile("temperature")
+        thickness = snowpack.layer_thicknesses
+        temperature = snowpack.profile("temperature")
 
-        self.effective_permittivity = [emmodel.effective_permittivity() for emmodel in emmodels]
+        effective_permittivity = [emmodel.effective_permittivity() for emmodel in emmodels]
 
-        self.substrate = snowpack.substrate
+        substrate = snowpack.substrate
 
         if snowpack.substrate is not None and snowpack.substrate.permittivity(sensor.frequency) is not None:
-            self.substrate_permittivity = self.substrate.permittivity(sensor.frequency)
-            if self.substrate_permittivity.imag < 1e-8:
+            substrate_permittivity = substrate.permittivity(sensor.frequency)
+            if substrate_permittivity.imag < 1e-8:
                 smrt_warn("the permittivity of the substrate has a too small imaginary part for reliable results")
-                self.thickness.append(1e10)
-                self.temperature.append(snowpack.substrate.temperature)
-            else:
-                self.substrate = snowpack.substrate
-                self.substrate_permittivity = None
+                thickness.append(1e10)
+                temperature.append(snowpack.substrate.temperature)
+        else:
+            substrate = snowpack.substrate
+            substrate_permittivity = None
 
         # Active sensor
         # only V and H are necessary for first order
@@ -107,18 +107,11 @@ class IterativeFirst(object):
 
         # effective_permittivity = np.array(effective_permittivity)
 
-        self.mu0 = np.cos(sensor.theta)
+        mu0 = np.cos(sensor.theta)
         self.dphi = np.pi
 
-        # create the model
-        self.emmodels = emmodels
-        # interface
-        self.interfaces = snowpack.interfaces
-        # sensor
-        self.sensor = sensor
-
         # solve with first order iterative solution
-        I = self.calc_intensity(snowpack, emmodels)
+        I = self.calc_intensity(snowpack, emmodels, sensor, snowpack.interfaces, substrate, effective_permittivity, mu0)
 
         #  describe the results list of (dimension name, dimension array of value)
         coords = [("theta_inc", sensor.theta_inc_deg), ("polarization_inc", self.pola), ("polarization", self.pola)]
@@ -126,7 +119,7 @@ class IterativeFirst(object):
         # store other diagnostic information
         layer_index = "layer", range(self.nlayer)
         other_data = {
-            "effective_permittivity": xr.DataArray(self.effective_permittivity, coords=[layer_index]),
+            "effective_permittivity": xr.DataArray(effective_permittivity, coords=[layer_index]),
             "ks": xr.DataArray([getattr(em, "ks", np.nan) for em in emmodels], coords=[layer_index]),
             "ka": xr.DataArray([getattr(em, "ka", np.nan) for em in emmodels], coords=[layer_index]),
             "thickness": xr.DataArray(snowpack.layer_thicknesses, coords=[layer_index]),
@@ -149,34 +142,37 @@ class IterativeFirst(object):
         else:
             return make_result(sensor, total_I, coords=coords, other_data=other_data)
 
-    def calc_intensity(self, snowpack, emmodels):
-        nlayer = self.nlayer
-        dphi = np.pi
-        len_mu = len(self.mu0)
+    def calc_intensity(self, snowpack, emmodels, sensor, interfaces, substrate, effective_permittivity, mu0):
+        nlayer = snowpack.nlayer
+        dphi = self.dphi
+        len_mu = len(mu0)
         npol = self.npol
 
         # no need for 3x3 in first order solution
         I_i = np.array([[1, 0], [0, 1]]).T
 
         interface_l = zInterfaceProperties(
-            self.sensor.frequency,
-            self.interfaces,
-            self.substrate,
-            self.effective_permittivity,
-            self.mu0,
-            npol,
-            nlayer,
-            dphi,
+                                        sensor.frequency,
+                                        interfaces,
+                                        substrate,
+                                        effective_permittivity,
+                                        mu0,
+                                        npol,
+                                        nlayer,
+                                        dphi,
         )
 
-        # Intensity incident transmitted to first layer from air
-        I_l = get_np_matrix(interface_l.Tbottom_coh[-1], npol) @ I_i
 
         # get list of thickness for each layer
         thickness = snowpack.layer_thicknesses
 
         # mu for all layer and can have more than 1 if theta from sensor is a list
         mus = interface_l.mu
+
+        #dense snow factor (I think) eq 22a and eq 22b in Tsang et al 2007
+        dense_factor_0 = (1/effective_permittivity[0].real) * (mu0/mus[0])
+        # Intensity incident transmitted to first layer from air
+        I_l = get_np_matrix(interface_l.Tbottom_coh[-1], npol) @ I_i * dense_factor_0
 
         # 3 for the number of contribution for the first order backscatter
         intensity_up = np.zeros((len_mu, 4, npol, npol))
@@ -281,11 +277,14 @@ class IterativeFirst(object):
             # add order and transmission upward
             intensity_up += np.matmul(Ttop_coh_m, I)
 
-            # intensity in the layer transmitted downward for upper layer with one way attenuation
-            # one way attenuation??? sqrt of gamma2?
-            I_l = np.matmul(Tbottom_coh_m, (I_l * gamma2))
+            if l < nlayer-1:
+                #dense snow factor (I think) eq 22a and eq 22b in Tsang et al 2007
+                dense_factor_l = (effective_permittivity[l].real/effective_permittivity[l+1].real) * (mus[l]/mus[l+1])
+                # intensity in the layer transmitted downward for upper layer with one way attenuation
+                # one way attenuation??? sqrt of gamma2?
+                I_l = np.matmul(Tbottom_coh_m, (I_l * gamma2)) * dense_factor_l
 
-        if self.substrate is None and optical_depth < 5:
+        if substrate is None and optical_depth < 5:
             smrt_warn(
                 "The solver has detected that the snowpack is optically shallow (tau=%g) and no substrate has been set, meaning that the space "
                 "under the snowpack is vaccum and that the snowpack is shallow enough to affect the signal measured at the surface."
