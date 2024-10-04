@@ -127,11 +127,11 @@ class IterativeFirst(object):
 
         # get total intensity from the three contributions
         # first index is the number of mu
-        total_I = I[:, 0] + I[:, 1] + I[:, 2] + I[:, 3]
+        total_I = I[0] + I[1] + I[2] + I[3]
 
         if self.return_contributions:
             # add total to the intensity array
-            intensity = np.array([total_I, I[:, 0], I[:, 1], I[:, 2], I[:, 3]])
+            intensity = np.array([total_I, I[0], I[1], I[2], I[3]])
             return make_result(
                 sensor,
                 intensity,
@@ -170,119 +170,124 @@ class IterativeFirst(object):
         mus = interface_l.mu
 
         #dense snow factor (I think) eq 22a and eq 22b in Tsang et al 2007
-        dense_factor_0 = (1/effective_permittivity[0].real) * (mu0/mus[0])
+        # reshape size to match intensity
+        dense_factor_0 = np.atleast_3d((1/effective_permittivity[0].real) * (mu0/mus[0])).reshape(len_mu,1,1)
         # Intensity incident transmitted to first layer from air
-        I_l = get_np_matrix(interface_l.Tbottom_coh[-1], npol) @ I_i * dense_factor_0
+        I_l = get_np_matrix(interface_l.Tbottom_coh[-1], npol, len_mu) @ I_i * dense_factor_0
 
         # 3 for the number of contribution for the first order backscatter
-        intensity_up = np.zeros((len_mu, 4, npol, npol))
+        intensity_up = np.zeros((4, len_mu, npol, npol))
         optical_depth = 0
         for l in range(nlayer):
             # check scat albedo for validity of iterative solution
             scat_albedo = emmodels[l].ks / (emmodels[l].ks + emmodels[l].ka)
-            if scat_albedo > 0.3:
+            if scat_albedo > 0.5:
                 smrt_warn(
                     f"Warning : scattering albedo ({np.round(scat_albedo,2)}) might be too high"
-                    + " for iterative method. Limit is 0.3."
+                    + " for iterative method. Limit is around 0.5."
                 )
 
             # prepare matrix of interface
             # transmission matrix of the top layer to l-1
-            Ttop_coh_m = get_np_matrix(interface_l.Ttop_coh[l], npol)
+            Ttop_coh_m = get_np_matrix(interface_l.Ttop_coh[l], npol, len_mu)
 
             # transmission matrix of the bottom layer to l+1
-            Tbottom_coh_m = get_np_matrix(interface_l.Tbottom_coh[l], npol)
+            Tbottom_coh_m = get_np_matrix(interface_l.Tbottom_coh[l], npol, len_mu)
 
             # Specular Reflection matrix of the bottom layer
-            Rbottom_coh_m = get_np_matrix(interface_l.Rbottom_coh[l], npol)
+            Rbottom_coh_m = get_np_matrix(interface_l.Rbottom_coh[l], npol, len_mu)
 
             # Diffuse reflection matrix of the bottom layer
-            Rbottom_diff_m = get_np_matrix(interface_l.Rbottom_diff[l], npol)
+            Rbottom_diff_m = get_np_matrix(interface_l.Rbottom_diff[l], npol, len_mu)
 
             # get phase function for array of mu and -mu
-            phases = np.array(
-                [
-                    emmodels[l]
-                    .phase(np.array([mu, -mu]).squeeze(), np.array([mu, -mu]).squeeze(), dphi, npol)
-                    .values.squeeze()
-                    for mu in mus[l]
-                ]
-            )
+            mus_sym = np.concatenate([-mus[l], mus[l]])
+            phases = emmodels[l].phase(mus_sym, mus_sym, dphi, npol).values.squeeze()
 
             # 1/4pi normalization of the RT equation for SMRT
             # applied to phase here, interface and subsrate already have the smrt_norm
             phases = phases / (4 * np.pi)
 
-            index_comb = np.array(np.meshgrid(range(0, npol), range(0, npol))).T.reshape(-1, 2)
-
-            # Phase function of up and downward wave (direct backscatter);
-            # (-mu, mu) : [1,0]
-            # (mu, -mu) : [0,1]
-            P_Up = np.array([[phases[i][tuple(index)][1, 0] for index in index_comb] for i in range(len_mu)]).reshape(
-                len_mu, npol, npol
-            )
-            P_Down = np.array([[phases[i][tuple(index)][0, 1] for index in index_comb] for i in range(len_mu)]).reshape(
-                len_mu, npol, npol
-            )
-            # and up and down  bi-static scatter
-            # (mu, mu) : [0,0]
-            # (-mu, -mu) : [1,1]
-            P_Bi_Up = np.array(
-                [[phases[i][tuple(index)][0, 0] for index in index_comb] for i in range(len_mu)]
-            ).reshape(len_mu, npol, npol)
-            P_Bi_Down = np.array(
-                [[phases[i][tuple(index)][1, 1] for index in index_comb] for i in range(len_mu)]
-            ).reshape(len_mu, npol, npol)
+            P_Up = np.array([phases[:,:, i, i + len_mu] for i in range(len_mu)])   #P(-mu, mu)
+            P_Down = np.array([phases[:,:, i + len_mu, i] for i in range(len_mu)])  #P(mu, -mu)
+            P_Bi_Up = np.array([phases[:,:, i + len_mu, i + len_mu] for i in range(len_mu)])  #P(mu, mu)
+            P_Bi_Down = np.array([phases[:,:, i, i] for i in range(len_mu)])  #P(-mu, -mu)
 
             ke = emmodels[l].ks + emmodels[l].ka
             layer_optical_depth = ke * thickness[l]
             optical_depth += layer_optical_depth
 
+            # convert to 3d array for computation of intensity
+            # allow computation of incident angle
             # two way attenuation (ulaby et al 2014, eq: 11.2)
-            gammas2 = np.exp(-2 * layer_optical_depth / mus[l])
+            gammas2 = np.atleast_3d(np.exp(-2 * layer_optical_depth / mus[l])).reshape(len_mu,1,1)
+            mu_3d = np.atleast_3d(mus[l]).reshape(len(mu0),1,1)
 
-            I = []
-            # this loop allows to calculate for multiple incident angle (mu)
-            # maybe there is a more efficient way with multidimensionnal array (TO DO)
-            for mu, gamma2, P_up, P_down, P_bi_down, P_bi_up in zip(mus[l], gammas2, P_Up, P_Down, P_Bi_Down, P_Bi_Up):
-                """
-                Zeroth order,  ulaby et al 2014 (first term of 11.74) should be zero for flat interface and off-nadir. 
-                Simply the reduced incident intensity, which attenuates exponentially inside the medium.
-                Scattering is not included, except for its contribution to extinction
-                """
-                I0_mu = Ttop_coh_m @ (gamma2 * (Rbottom_diff_m @ I_l))
 
-                """
-                First order, ulaby et al 2014 (11.75 and 11.62 )
-                Four contributions are taken into account
-                - Single volume backscatter upwards by the layer (direct backscatter)
-                - 2x single bistatic scattering by the layer and single reflection by the lower boundary. (double bounce)
-                - Single volume backscatter downward by the layer and double specular reflection by the boundary (reflected backscatter)
+            """
+            Zeroth order,  ulaby et al 2014 (first term of 11.74) should be zero for flat interface and off-nadir. 
+            Simply the reduced incident intensity, which attenuates exponentially inside the medium.
+            Scattering is not included, except for its contribution to extinction
+            """
+            I0_mu = Ttop_coh_m @ (gammas2 * (Rbottom_diff_m @ I_l))
 
-                """
-                # I1_all = ((1 - gamma2)/(2 * ke)*(gamma2 * (Rbottom_coh_m @ P_down @ Rbottom_coh_m) + P_up) +
-                #       (thickness[l] * gamma2 / mu[l] * (P_bi_down @ Rbottom_coh_m + Rbottom_coh_m @ P_bi_up))) @ I_l
+            """
+            First order, ulaby et al 2014 (11.75 and 11.62 )
+            Four contributions are taken into account
+            - Single volume backscatter upwards by the layer (direct backscatter)
+            - 2x single bistatic scattering by the layer and single reflection by the lower boundary. (double bounce)
+            - Single volume backscatter downward by the layer and double specular reflection by the boundary (reflected backscatter)
 
-                I1_back = ((1 - gamma2) / (2 * ke) * P_up) @ I_l
+            """
 
-                I1_ref_back = ((1 - gamma2) / (2 * ke) * gamma2) * ((Rbottom_coh_m @ P_down @ Rbottom_coh_m) @ I_l)
+            I1_back = Ttop_coh_m @ ((1 - gammas2) / (2 * ke) * P_Up) @ I_l
 
-                I1_2B = (thickness[l] * gamma2 / mu * (P_bi_down @ Rbottom_coh_m + Rbottom_coh_m @ P_bi_up)) @ I_l
+            I1_ref_back = Ttop_coh_m @ (((1 - gammas2) / (2 * ke) * gammas2) * (Rbottom_coh_m @ P_Down @ Rbottom_coh_m)) @ I_l
+   
+            I1_2B = Ttop_coh_m @ (thickness[l] * gammas2 / mu_3d * (P_Bi_Down @ Rbottom_coh_m + Rbottom_coh_m @ P_Bi_Up)) @ I_l
 
-                I1_mu = np.array([I1_back, I1_ref_back, I1_2B, I0_mu])
+            # shape of intensity (incident angle, first order contribution, npo, npol)
+            I1 = np.array([I1_back, I1_ref_back, I1_2B, I0_mu]).reshape(4, len_mu, npol, npol)
 
-                I.append(I1_mu)
+            # for mu, gamma2, P_up, P_down, P_bi_down, P_bi_up in zip(mus[l], gammas2, P_Up, P_Down, P_Bi_Down, P_Bi_Up):
+            #     """
+            #     Zeroth order,  ulaby et al 2014 (first term of 11.74) should be zero for flat interface and off-nadir. 
+            #     Simply the reduced incident intensity, which attenuates exponentially inside the medium.
+            #     Scattering is not included, except for its contribution to extinction
+            #     """
+            #     I0_mu = Ttop_coh_m @ (gamma2 * (Rbottom_diff_m @ I_l))
 
-            I = np.array(I)
-            # add order and transmission upward
-            intensity_up += np.matmul(Ttop_coh_m, I)
+            #     """
+            #     First order, ulaby et al 2014 (11.75 and 11.62 )
+            #     Four contributions are taken into account
+            #     - Single volume backscatter upwards by the layer (direct backscatter)
+            #     - 2x single bistatic scattering by the layer and single reflection by the lower boundary. (double bounce)
+            #     - Single volume backscatter downward by the layer and double specular reflection by the boundary (reflected backscatter)
+
+            #     """
+            #     # I1_all = ((1 - gamma2)/(2 * ke)*(gamma2 * (Rbottom_coh_m @ P_down @ Rbottom_coh_m) + P_up) +
+            #     #       (thickness[l] * gamma2 / mu[l] * (P_bi_down @ Rbottom_coh_m + Rbottom_coh_m @ P_bi_up))) @ I_l
+
+            #     I1_back = ((1 - gamma2) / (2 * ke) * P_up) @ I_l
+
+            #     I1_ref_back = ((1 - gamma2) / (2 * ke) * gamma2) * ((Rbottom_coh_m @ P_down @ Rbottom_coh_m) @ I_l)
+
+            #     I1_2B = (thickness[l] * gamma2 / mu * (P_bi_down @ Rbottom_coh_m + Rbottom_coh_m @ P_bi_up)) @ I_l
+
+            #     I1_mu = np.array([I1_back, I1_ref_back, I1_2B, I0_mu])
+
+            #     I.append(I1_mu)
+
+            # add intensity
+            intensity_up += I1
 
             if l < nlayer-1:
+                print(l, nlayer-1)
                 #dense snow factor (I think) eq 22a and eq 22b in Tsang et al 2007
-                dense_factor_l = (effective_permittivity[l].real/effective_permittivity[l+1].real) * (mus[l]/mus[l+1])
+                dense_factor_l = np.atleast_3d(effective_permittivity[l].real/effective_permittivity[l+1].real) * (mus[l]/mus[l+1]).reshape(len_mu,1,1)
                 # intensity in the layer transmitted downward for upper layer with one way attenuation
                 # one way attenuation??? sqrt of gamma2?
-                I_l = np.matmul(Tbottom_coh_m, (I_l * gamma2)) * dense_factor_l
+                I_l = Tbottom_coh_m @ (gammas2 * dense_factor_l * I_l)
 
         if substrate is None and optical_depth < 5:
             smrt_warn(
@@ -293,25 +298,42 @@ class IterativeFirst(object):
             )
 
         # snow to air final transmission upward
-        intensity = np.matmul(get_np_matrix(interface_l.Ttop_coh[0], npol), intensity_up)
+        intensity = get_np_matrix(interface_l.Ttop_coh[0], npol, len_mu) @ intensity_up
 
         # 1/4pi normalization of the RT equation like DORT
         return intensity
 
 
-def get_np_matrix(smrt_m, npol):
+# def get_np_matrix(smrt_m, npol):
+#     # input are smrt matrix, out numpy matrix
+#     if is_equal_zero(smrt_m):
+#         np_m = np.zeros((npol, npol))
+#         return np_m
+
+#     if smrt_m.mtype.startswith("diagonal"):
+#         np_m = np.zeros((npol, npol))
+#         np.fill_diagonal(np_m, smrt_m.values)
+#         return np_m
+
+#     else:
+#         return smrt_m.values.squeeze()
+    
+def get_np_matrix(smrt_m, npol, n_mu):
     # input are smrt matrix, out numpy matrix
     if is_equal_zero(smrt_m):
-        np_m = np.zeros((npol, npol))
+        np_m = np.zeros((n_mu, npol, npol))
         return np_m
 
     if smrt_m.mtype.startswith("diagonal"):
-        np_m = np.zeros((npol, npol))
-        np.fill_diagonal(np_m, smrt_m.values)
+        np_m = np.zeros((n_mu, npol, npol))
+        for i in range(n_mu):
+            np.fill_diagonal(np_m[i], smrt_m.diagonal[:,i])    
         return np_m
 
     else:
-        return smrt_m.values.squeeze()
+        raise NotImplementedError
+        # print('dense')
+        # return smrt_m.values.squeeze()
 
 
 #### Potential bug!
