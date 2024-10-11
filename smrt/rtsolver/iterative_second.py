@@ -1,29 +1,21 @@
 # coding: utf-8
 
 """
-Solve the radiative transfer equation using the first order iteration of the iterative solution to calculate
-the backscatter. The solver calculate the zeroth and first order backscatter. This solver is most efficient
-than 'dort' but needs to be use with caution. Single scattering albedo should be < 0.3. Muliple scattering are 
-not taken into account in the first order. The second order solution would be needed when the scattering albedo
-and the multiple scattering becomes a factor. The advantage of this solver is the ability to investigate the 
+Solve the radiative transfer equation using the first order and the second order iteration of the iterative solution to calculate
+the backscatter. The solver calculate the zeroth, first and second order backscatter. This solver is most efficient
+than 'dort' but needs to be use with caution. Single scattering albedo should be < 0.5. Muliple scattering (only double scattering) 
+taken into account in the first order. The advantage of this solver is the ability to investigate the 
 different mechanism of backscatter.
 
+The only component of second order is:
 
-Zeroth order should be zero for flat interface and off-nadir. Simply the reduced incident intensity, which 
-attenuates exponentially inside the medium. Scattering is not included, except for its contribution to 
-extinction. (Ulaby et al. 2014, first term of 11.74) 
+    'double_scattering' : 2x bistatic scattering by the layer
 
-First order calculates three contributions. (Ulaby et al. 2014, eqn : 11.75 and 11.62 )
-
-    'direct_backscatter' : Single volume backscatter upwards by the layer.
-
-    'reflection_backscatter' : Single volume backscatter downward by the layer and double specular reflection by the boundary.
-
-    'double_bounce' : 2x Single bistatic scattering by the layer and single reflection by the lower boundary
+This component is added to all component of the first order
 
 Usage::
-     # Create a model using a nonscattering medium and the rtsolver 'iterative_first'.
-     m = make_model("nonscattering", "iterative_first")
+     # Create a model using a nonscattering medium and the rtsolver 'iterative_second'.
+     m = make_model("nonscattering", "iterative_second")
 
 Backscatter only!
 
@@ -38,9 +30,8 @@ import xarray as xr
 
 # local import
 from smrt.core.error import SMRTError, smrt_warn
-from smrt.core.lib import smrt_matrix, is_equal_zero
+from smrt.core.lib import is_equal_zero
 from smrt.core.result import make_result
-from smrt.core.fresnel import snell_angle
 from smrt.rtsolver.dort import compute_stream
 from smrt.rtsolver.iterative_first import IterativeFirst, get_np_matrix, zInterfaceProperties
 
@@ -53,6 +44,11 @@ class IterativeSecond(object):
                             the code. If set to "nan", return a nan, so the calculation can continue, but the 
                             result is of course unusuable and the error message is not accessible. This is only 
                             recommended for long simulations that sometimes produce an error.
+
+    :param return_contributions: If set to "False" (the default), only the total backscatter is return. If set
+                                to "True", then the five contributions ('direct_backscatter',
+                                'reflection_backscatter', 'double_bounce', 'zeroth', 'double_scattering') described 
+                                above and the 'total' backscatter are returned.
 
 
     """
@@ -97,7 +93,7 @@ class IterativeSecond(object):
 
         substrate = snowpack.substrate
 
-        if snowpack.substrate is not None:
+        if substrate is not None and substrate.permittivity(sensor.frequency) is not None:
             substrate_permittivity = substrate.permittivity(sensor.frequency)
             if substrate_permittivity.imag < 1e-8:
                 smrt_warn(
@@ -109,8 +105,9 @@ class IterativeSecond(object):
             substrate_permittivity = None
 
         # Active sensor
-        #only v and H are necessary for first order
+        #only returns V and H but U is used in the calculation. U is removed at the end to match first order
         self.pola = ['V', 'H']
+        #but U is used in the calculation, so npol =3
         self.npol = 3
         self.nlayer = snowpack.nlayer
         temperature = None
@@ -225,7 +222,9 @@ class IterativeSecond(object):
                 dense_factor_l = np.atleast_3d(effective_permittivity[l].real/effective_permittivity[l+1].real) * (mu_i/interface_l.mu[l+1]).reshape(len_mu,1,1)
                 # intensity in the layer transmitted downward for upper layer with one way attenuation
                 # one way attenuation??? sqrt of gamma2?
-                I_l = np.matmul(Tbottom_coh_m, (I_l * gamma2)) * dense_factor_l
+
+                #I_l = np.matmul(Tbottom_coh_m, (I_l * gamma2)) * dense_factor_l
+                I_l = Tbottom_coh_m @ (I_l * gamma2) * dense_factor_l
 
         if snowpack.substrate is None and optical_depth < 5:
             smrt_warn(
@@ -297,7 +296,7 @@ class IterativeSecond(object):
         #summation of m=1 to m_max, skip 0
         for m in range(self.m_max)[1:]:
             sum_mc += (m1_c[:,m] @ m2_c[:,m]  - m1_s[:,m] @ m2_s[:,m]) * np.cos(m * self.dphi)
-            #sum_ms += (m1_c[:,m] @ m2_s[:,m]  + m1_s[:,m] @ m2_c[:,m]) * np.sin(m * Integral.dphi) # equal to 0
+            #sum_ms += (m1_c[:,m] @ m2_s[:,m]  + m1_s[:,m] @ m2_c[:,m]) * np.sin(m * self.dphi) # equal to 0
 
         int_phi = int_0 + np.pi * sum_mc #+ np.pi * sum_ms
 
@@ -359,141 +358,17 @@ class IterativeSecond(object):
 def compute_gamma(mu, layer_optical_depth):
     return np.exp(-1 * layer_optical_depth / mu)
 
-def get_np_matrix_stream(smrt_m, npol, n_max_stream):
-    # input are smrt matrix, out numpy matrix
-    if is_equal_zero(smrt_m):
-        np_m = np.zeros((n_max_stream, npol, npol))
-        return np_m
+# def get_np_matrix_stream(smrt_m, npol, n_max_stream):
+#     # input are smrt matrix, out numpy matrix
+#     if is_equal_zero(smrt_m):
+#         np_m = np.zeros((n_max_stream, npol, npol))
+#         return np_m
 
-    if smrt_m.mtype.startswith("diagonal"):
-        np_m = np.zeros((n_max_stream, npol, npol))
-        [np.fill_diagonal(np_m[i,:,:], smrt_m.values[:,i]) for i in range(n_max_stream)]
-        return np_m
+#     if smrt_m.mtype.startswith("diagonal"):
+#         np_m = np.zeros((n_max_stream, npol, npol))
+#         [np.fill_diagonal(np_m[i,:,:], smrt_m.values[:,i]) for i in range(n_max_stream)]
+#         return np_m
 
-    else:
-        return smrt_m.values.squeeze()
+#     else:
+#         return smrt_m.values.squeeze()
     
-
-
-    
-#### Potential bug!
-# added z in the name of the class InterfaceProperties
-# issue with import class in plugin.py line 75
-# get a list of sorted classs by name not order of appearance. Needs to be discuss with Ghi. 
-# So far, not in issu with dort or other module.
-# catch by test_normal_call()
-
-# class zInterfaceProperties(object):
-#     # prepare interface properties of multi-layer snowpack
-#     # top and bottom interface of layer l, index -1 refers to air layer
-#     # different than first order, here we need for incident angle and streams
-
-#     def __init__(self, frequency, interfaces, substrate, permittivity, streams, mu0, npol, nlayer, dphi):
-
-#         permittivity = permittivity
-
-#         self.Rtop_coh = dict()
-#         self.Rtop_coh_int = dict()
-#         #self.Rtop_diff = dict()
-#         self.Ttop_coh = dict()
-#         # self.Ttop_diff = dict()
-#         self.Rbottom_coh = dict()
-#         self.Rbottom_coh_int = dict()
-#         #self.Rbottom_diff = dict()
-#         self.Tbottom_coh = dict()
-#         # self.Tbottom_diff = dict()
-
-#         self.mu = dict()
-#         self.mu[-1] = mu0
-#         # air-snow DOWN
-#         # index -1 refers to air layer
-#         self.Tbottom_coh[-1] = interfaces[0].coherent_transmission_matrix(frequency,
-#                                                                           1, permittivity[0],
-#                                                                           mu0,
-#                                                                           npol)
-
-#         # air-snow DOWN
-#         self.Rbottom_coh[-1] = interfaces[0].specular_reflection_matrix(
-#             frequency, 1, permittivity[0], mu0, npol)
-        
-
-        
-#         # air-snow DOWN streams
-#         # no need for streams in air
-
-#         for l in range(nlayer):
-#             # define permittivity
-#             # #for permittivity, index 0 = air, length of permittivity is l+1
-#             eps_lm1 = permittivity[l - 1] if l > 0 else 1
-#             eps_l = permittivity[l]
-#             if l < nlayer - 1:
-#                 eps_lp1 = permittivity[l + 1]
-#             else:
-#                 eps_lp1 = None
-
-#             # going in the medium of layer l
-#             # calcule angle of medium l
-#             self.mu[l] = snell_angle(eps_lm1, eps_l, mu0)
-
-#             self.Rtop_coh[l] = interfaces[l].specular_reflection_matrix(frequency,
-#                                                                         eps_l,
-#                                                                         eps_lm1,
-#                                                                         self.mu[l],
-#                                                                         npol)
-            
-#             self.Rtop_coh_int[l] = interfaces[l].specular_reflection_matrix(frequency,
-#                                                                         eps_l,
-#                                                                         eps_lm1,
-#                                                                         streams.mu[l],
-#                                                                         npol)
-
-
-#             self.Ttop_coh[l] = interfaces[l].coherent_transmission_matrix(frequency,
-#                                                                           eps_l,
-#                                                                           eps_lm1,
-#                                                                           self.mu[l],
-#                                                                           npol)
-
-#             if l < nlayer - 1:
-#                 # set up interfaces
-#                 # snow - snow
-#                 # Upward
-#                 self.Rbottom_coh[l] = interfaces[l+1].specular_reflection_matrix(frequency,
-#                                                                                  eps_l,
-#                                                                                  eps_lp1,
-#                                                                                  self.mu[l],
-#                                                                                  npol)
-                
-#                 self.Rbottom_coh_int[l] = interfaces[l+1].specular_reflection_matrix(frequency,
-#                                                                                  eps_l,
-#                                                                                  eps_lp1,
-#                                                                                  streams.mu[l],
-#                                                                                  npol)
-
-
-#                 self.Tbottom_coh[l] = interfaces[l+1].coherent_transmission_matrix(frequency,
-#                                                                                    eps_l,
-#                                                                                    eps_lp1,
-#                                                                                    self.mu[l],
-#                                                                                    npol)
-
-#             elif substrate is not None:
-#                 self.Rbottom_coh[l] = substrate.specular_reflection_matrix(frequency,
-#                                                                            eps_l,
-#                                                                            self.mu[l],
-#                                                                            npol)
-                
-#                 self.Rbottom_coh_int[l] = substrate.specular_reflection_matrix(frequency,
-#                                                                            eps_l,
-#                                                                            streams.mu[l],
-#                                                                            npol)
-
-
-#                 # sub-snow
-#                 self.Tbottom_coh[l] = smrt_matrix(0)
-
-#             else:
-#                 # fully transparent substrate
-#                 self.Rbottom_coh[l] = smrt_matrix(0)
-#                 #self.Rbottom_diff[l] = smrt_matrix(0)
-#                 self.Tbottom_coh[l] = smrt_matrix(0)

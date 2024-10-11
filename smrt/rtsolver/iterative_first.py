@@ -53,8 +53,8 @@ class IterativeFirst(object):
                             recommended for long simulations that sometimes produce an error.
 
     :param return_contributions: If set to "False" (the default), only the total backscatter is return. If set
-                                to "True", then the three contributions ('direct_backscatter',
-                                'reflection_backscatter', 'double_bounce') described above and the 'total'
+                                to "True", then the four contributions ('direct_backscatter',
+                                'reflection_backscatter', 'double_bounce', 'zeroth') described above and the 'total'
                                 backscatter are returned.
     """
 
@@ -87,8 +87,7 @@ class IterativeFirst(object):
         effective_permittivity = [emmodel.effective_permittivity() for emmodel in emmodels]
 
         substrate = snowpack.substrate
-
-        if snowpack.substrate is not None and snowpack.substrate.permittivity(sensor.frequency) is not None:
+        if substrate is not None and substrate.permittivity(sensor.frequency) is not None:
             substrate_permittivity = substrate.permittivity(sensor.frequency)
             if substrate_permittivity.imag < 1e-8:
                 smrt_warn("the permittivity of the substrate has a too small imaginary part for reliable results")
@@ -135,7 +134,7 @@ class IterativeFirst(object):
             return make_result(
                 sensor,
                 intensity,
-                coords=[("contribution", ["total", "direct_backscatter", "reflection_backscatter", "double_bounce", 'zeroth'])]
+                coords=[("contribution", ["total", "direct_backscatter", "reflection_backscatter", "double_bounce", "zeroth"])]
                 + coords,
                 other_data=other_data,
             )
@@ -249,40 +248,11 @@ class IterativeFirst(object):
             # shape of intensity (incident angle, first order contribution, npo, npol)
             I1 = np.array([I1_back, I1_ref_back, I1_2B, I0_mu]).reshape(4, len_mu, npol, npol)
 
-            # for mu, gamma2, P_up, P_down, P_bi_down, P_bi_up in zip(mus[l], gammas2, P_Up, P_Down, P_Bi_Down, P_Bi_Up):
-            #     """
-            #     Zeroth order,  ulaby et al 2014 (first term of 11.74) should be zero for flat interface and off-nadir. 
-            #     Simply the reduced incident intensity, which attenuates exponentially inside the medium.
-            #     Scattering is not included, except for its contribution to extinction
-            #     """
-            #     I0_mu = Ttop_coh_m @ (gamma2 * (Rbottom_diff_m @ I_l))
-
-            #     """
-            #     First order, ulaby et al 2014 (11.75 and 11.62 )
-            #     Four contributions are taken into account
-            #     - Single volume backscatter upwards by the layer (direct backscatter)
-            #     - 2x single bistatic scattering by the layer and single reflection by the lower boundary. (double bounce)
-            #     - Single volume backscatter downward by the layer and double specular reflection by the boundary (reflected backscatter)
-
-            #     """
-            #     # I1_all = ((1 - gamma2)/(2 * ke)*(gamma2 * (Rbottom_coh_m @ P_down @ Rbottom_coh_m) + P_up) +
-            #     #       (thickness[l] * gamma2 / mu[l] * (P_bi_down @ Rbottom_coh_m + Rbottom_coh_m @ P_bi_up))) @ I_l
-
-            #     I1_back = ((1 - gamma2) / (2 * ke) * P_up) @ I_l
-
-            #     I1_ref_back = ((1 - gamma2) / (2 * ke) * gamma2) * ((Rbottom_coh_m @ P_down @ Rbottom_coh_m) @ I_l)
-
-            #     I1_2B = (thickness[l] * gamma2 / mu * (P_bi_down @ Rbottom_coh_m + Rbottom_coh_m @ P_bi_up)) @ I_l
-
-            #     I1_mu = np.array([I1_back, I1_ref_back, I1_2B, I0_mu])
-
-            #     I.append(I1_mu)
 
             # add intensity
             intensity_up += I1
 
             if l < nlayer-1:
-                print(l, nlayer-1)
                 #dense snow factor (I think) eq 22a and eq 22b in Tsang et al 2007
                 dense_factor_l = np.atleast_3d(effective_permittivity[l].real/effective_permittivity[l+1].real) * (mus[l]/mus[l+1]).reshape(len_mu,1,1)
                 # intensity in the layer transmitted downward for upper layer with one way attenuation
@@ -303,20 +273,6 @@ class IterativeFirst(object):
         # 1/4pi normalization of the RT equation like DORT
         return intensity
 
-
-# def get_np_matrix(smrt_m, npol):
-#     # input are smrt matrix, out numpy matrix
-#     if is_equal_zero(smrt_m):
-#         np_m = np.zeros((npol, npol))
-#         return np_m
-
-#     if smrt_m.mtype.startswith("diagonal"):
-#         np_m = np.zeros((npol, npol))
-#         np.fill_diagonal(np_m, smrt_m.values)
-#         return np_m
-
-#     else:
-#         return smrt_m.values.squeeze()
     
 def get_np_matrix(smrt_m, npol, n_mu):
     # input are smrt matrix, out numpy matrix
