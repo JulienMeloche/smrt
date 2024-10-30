@@ -134,7 +134,12 @@ class IterativeFirst(object):
             return make_result(
                 sensor,
                 intensity,
-                coords=[("contribution", ["total", "direct_backscatter", "reflection_backscatter", "double_bounce", "zeroth"])]
+                coords=[
+                    (
+                        "contribution",
+                        ["total", "direct_backscatter", "reflection_backscatter", "double_bounce", "zeroth"],
+                    )
+                ]
                 + coords,
                 other_data=other_data,
             )
@@ -150,17 +155,16 @@ class IterativeFirst(object):
         # no need for 3x3 in first order solution
         I_i = np.array([[1, 0], [0, 1]]).T
 
-        interface_l = zInterfaceProperties(
-                                        sensor.frequency,
-                                        interfaces,
-                                        substrate,
-                                        effective_permittivity,
-                                        mu0,
-                                        npol,
-                                        nlayer,
-                                        dphi,
+        interface_l = _InterfaceProperties(
+            sensor.frequency,
+            interfaces,
+            substrate,
+            effective_permittivity,
+            mu0,
+            npol,
+            nlayer,
+            dphi,
         )
-
 
         # get list of thickness for each layer
         thickness = snowpack.layer_thicknesses
@@ -168,9 +172,9 @@ class IterativeFirst(object):
         # mu for all layer and can have more than 1 if theta from sensor is a list
         mus = interface_l.mu
 
-        #dense snow factor (I think) eq 22a and eq 22b in Tsang et al 2007
+        # dense snow factor (I think) eq 22a and eq 22b in Tsang et al 2007
         # reshape size to match intensity
-        dense_factor_0 = np.atleast_3d((1/effective_permittivity[0].real) * (mu0/mus[0])).reshape(len_mu,1,1)
+        dense_factor_0 = np.atleast_3d((1 / effective_permittivity[0].real) * (mu0 / mus[0])).reshape(len_mu, 1, 1)
         # Intensity incident transmitted to first layer from air
         I_l = get_np_matrix(interface_l.Tbottom_coh[-1], npol, len_mu) @ I_i * dense_factor_0
 
@@ -207,10 +211,10 @@ class IterativeFirst(object):
             # applied to phase here, interface and subsrate already have the smrt_norm
             phases = phases / (4 * np.pi)
 
-            P_Up = np.array([phases[:,:, i, i + len_mu] for i in range(len_mu)])   #P(-mu, mu)
-            P_Down = np.array([phases[:,:, i + len_mu, i] for i in range(len_mu)])  #P(mu, -mu)
-            P_Bi_Up = np.array([phases[:,:, i + len_mu, i + len_mu] for i in range(len_mu)])  #P(mu, mu)
-            P_Bi_Down = np.array([phases[:,:, i, i] for i in range(len_mu)])  #P(-mu, -mu)
+            P_Up = np.array([phases[:, :, i, i + len_mu] for i in range(len_mu)])  # P(-mu, mu)
+            P_Down = np.array([phases[:, :, i + len_mu, i] for i in range(len_mu)])  # P(mu, -mu)
+            P_Bi_Up = np.array([phases[:, :, i + len_mu, i + len_mu] for i in range(len_mu)])  # P(mu, mu)
+            P_Bi_Down = np.array([phases[:, :, i, i] for i in range(len_mu)])  # P(-mu, -mu)
 
             ke = emmodels[l].ks + emmodels[l].ka
             layer_optical_depth = ke * thickness[l]
@@ -219,9 +223,8 @@ class IterativeFirst(object):
             # convert to 3d array for computation of intensity
             # allow computation of incident angle
             # two way attenuation (ulaby et al 2014, eq: 11.2)
-            gammas2 = np.atleast_3d(np.exp(-2 * layer_optical_depth / mus[l])).reshape(len_mu,1,1)
-            mu_3d = np.atleast_3d(mus[l]).reshape(len(mu0),1,1)
-
+            gammas2 = np.atleast_3d(np.exp(-2 * layer_optical_depth / mus[l])).reshape(len_mu, 1, 1)
+            mu_3d = np.atleast_3d(mus[l]).reshape(len(mu0), 1, 1)
 
             """
             Zeroth order,  ulaby et al 2014 (first term of 11.74) should be zero for flat interface and off-nadir. 
@@ -241,20 +244,27 @@ class IterativeFirst(object):
 
             I1_back = Ttop_coh_m @ ((1 - gammas2) / (2 * ke) * P_Up) @ I_l
 
-            I1_ref_back = Ttop_coh_m @ (((1 - gammas2) / (2 * ke) * gammas2) * (Rbottom_coh_m @ P_Down @ Rbottom_coh_m)) @ I_l
-   
-            I1_2B = Ttop_coh_m @ (thickness[l] * gammas2 / mu_3d * (P_Bi_Down @ Rbottom_coh_m + Rbottom_coh_m @ P_Bi_Up)) @ I_l
+            I1_ref_back = (
+                Ttop_coh_m @ (((1 - gammas2) / (2 * ke) * gammas2) * (Rbottom_coh_m @ P_Down @ Rbottom_coh_m)) @ I_l
+            )
+
+            I1_2B = (
+                Ttop_coh_m
+                @ (thickness[l] * gammas2 / mu_3d * (P_Bi_Down @ Rbottom_coh_m + Rbottom_coh_m @ P_Bi_Up))
+                @ I_l
+            )
 
             # shape of intensity (incident angle, first order contribution, npo, npol)
             I1 = np.array([I1_back, I1_ref_back, I1_2B, I0_mu]).reshape(4, len_mu, npol, npol)
 
-
             # add intensity
             intensity_up += I1
 
-            if l < nlayer-1:
-                #dense snow factor (I think) eq 22a and eq 22b in Tsang et al 2007
-                dense_factor_l = np.atleast_3d(effective_permittivity[l].real/effective_permittivity[l+1].real) * (mus[l]/mus[l+1]).reshape(len_mu,1,1)
+            if l < nlayer - 1:
+                # dense snow factor (I think) eq 22a and eq 22b in Tsang et al 2007
+                dense_factor_l = np.atleast_3d(effective_permittivity[l].real / effective_permittivity[l + 1].real) * (
+                    mus[l] / mus[l + 1]
+                ).reshape(len_mu, 1, 1)
                 # intensity in the layer transmitted downward for upper layer with one way attenuation
                 # one way attenuation??? sqrt of gamma2?
                 I_l = Tbottom_coh_m @ (gammas2 * dense_factor_l * I_l)
@@ -273,7 +283,7 @@ class IterativeFirst(object):
         # 1/4pi normalization of the RT equation like DORT
         return intensity
 
-    
+
 def get_np_matrix(smrt_m, npol, n_mu):
     # input are smrt matrix, out numpy matrix
     if is_equal_zero(smrt_m):
@@ -283,7 +293,7 @@ def get_np_matrix(smrt_m, npol, n_mu):
     if smrt_m.mtype.startswith("diagonal"):
         np_m = np.zeros((n_mu, npol, npol))
         for i in range(n_mu):
-            np.fill_diagonal(np_m[i], smrt_m.diagonal[:,i])    
+            np.fill_diagonal(np_m[i], smrt_m.diagonal[:, i])
         return np_m
 
     else:
@@ -300,7 +310,7 @@ def get_np_matrix(smrt_m, npol, n_mu):
 # catch by test_normal_call()
 
 
-class zInterfaceProperties(object):
+class _InterfaceProperties(object):
     # prepare interface properties of multi-layer snowpack
     # top and bottom interface of layer l, index -1 refers to air layer
 
