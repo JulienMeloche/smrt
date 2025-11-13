@@ -1,11 +1,17 @@
 
 
 """
-Implement the interface boundary condition under IIEM (Improved IEM) formulation provided by Fung et al. 2002. 
+Provide the interface boundary condition under IIEM (Improved IEM) formulation provided by Fung et al. 2002. 
+
 The extended domain of validity (for large roughness or correlation length) is produced by using the transition Fresnel 
 coefficients (Fung et al. 2004). This code also produces bi-static coefficients for passive sensor. Multiple scattering 
 for crosspol is implemented from the original formulation in Fung 92. The integral for multiple scattering is done by 
 fixed order quadrature for faster computation. A more complex implementation would be AIEM (Wu et al 2004).
+
+Notes:
+    Computes diffuse reflection as described in Fung et al. 2002, the specular reflection
+    and the coherent transmission.  The implementation is only valid for the substrate has 
+    it does not provide the diffuse transmission.
 
 This code was based on the MATLAB code published by Ulaby & Long, 2014:
 https://tools.grss-ieee.org/rscl1/coderecord.php?id=469
@@ -43,6 +49,12 @@ class IIEM_Fung2002(IEM_Fung92):
                          "transition_fresnel": True,
                          }
         
+        def check_validity(self, ks):
+                # check validity
+                if ks > 3:
+                        raise SMRTError(
+                                "Warning, roughness_rms is too high for the given wavelength. Limit is ks < 3. Here ks=%g" % ks
+                        )
 
         
         def specular_reflection_matrix(self, frequency, eps_1, eps_2, mu1, npol):
@@ -120,14 +132,6 @@ class IIEM_Fung2002(IEM_Fung92):
                 mu_s = np.atleast_1d(clip_mu(mu_s))[np.newaxis, :, np.newaxis, np.newaxis]
                 dphi = np.atleast_1d(dphi)[:, np.newaxis, np.newaxis, np.newaxis]
 
-                # if not np.allclose(mu_s, mu_i) or not np.allclose(dphi, np.pi):
-                #     raise NotImplementederror("Only the backscattering coefficient is implemented at this stage."
-                #                                 "This is a very preliminary implementation")
-
-                # if len(np.atleast_1d(dphi)) != 1:   
-                #     raise NotImplementederror("Only the backscattering coefficient is implemented at this stage. ")
-
-
                 #incident wavenumber
                 k = vector3.from_angles(2 * np.pi * frequency / C_SPEED * np.sqrt(eps_1).real, mu_i, 0)
                 #scattered wavenumber
@@ -151,7 +155,14 @@ class IIEM_Fung2002(IEM_Fung92):
 
                 ks = np.abs(k.norm() * self.roughness_rms) 
                 #kl = np.abs(k.norm() * self.corr_length)
-                #self.check_validity(ks)
+
+                try:
+                        self.check_validity(ks)
+                except SMRTError as e:
+                        if self.warning_handling == "print":
+                                print(e)
+                        elif self.warning_handling == "nan":
+                                return smrt_matrix.full((npol, len(mu_i)), np.nan)
 
                 # prepare the series
                 N = self.series_truncation
