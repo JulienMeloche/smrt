@@ -89,7 +89,7 @@ def fresnel_coefficients_maezawa09_classical(eps_1, eps_2, mu1, full_output=Fals
             abs2(n1) * (eps_2.conjugate() * kyt).real / (abs2(n2) * (eps_1.conjugate() * kyi).real) * abs2(tv)
         )  # Optimized Eq 36
 
-        return rv, rh, th, tv, Rv, Rh, Tv, Th, mu2
+        return rv, rh, tv, th, Rv, Rh, Tv, Th, mu2
     else:
         return rv, rh, mu2
 
@@ -244,7 +244,7 @@ def fresnel_coefficients_maezawa09_rigorous_full_output(eps_1, eps_2, mu1):
     assert np.allclose(Rv + Tv, 1)  # check energy conservation
     assert np.allclose(Rh + Th, 1)  # check energy conservation
 
-    return rv, rh, th, tv, Rv, Rh, Tv, Th, mu2
+    return rv, rh, tv, th, Rv, Rh, Tv, Th, mu2
 
 
 # use the best function for the fresnel coefficients
