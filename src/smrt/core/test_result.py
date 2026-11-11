@@ -195,9 +195,19 @@ def test_save_open_result(tmp_path, res_example):
     assert res.sigma_dB(channel="VV") == res_example.sigma_dB(channel="VV")
 
 
-def test_save_open_result_other_data(tmp_path, res_example):
+backend_modules = {
+    "netcdf4": "netCDF4",
+    "h5netcdf": "h5netcdf",
+    "scipy": "scipy",
+}
+
+
+@pytest.mark.parametrize("engine", ["netcdf4", "h5netcdf"])
+def test_save_open_result_other_data(engine, tmp_path, res_example):
+    pytest.importorskip(backend_modules[engine])
+
     filename = tmp_path / "result.nc"
-    res_example.save(filename)
+    res_example.save(filename, netcdf_engine=engine)
 
     res = result.open_result(filename)
 

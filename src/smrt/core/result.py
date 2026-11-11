@@ -198,14 +198,25 @@ class Result(object):
         # save other_data in groups
         for k, v in self.other_data.items():
             if isinstance(v, (xr.DataArray, xr.Dataset)):
-                v.to_netcdf(
-                    filename,
-                    format="NETCDF4",
-                    engine=netcdf_engine,
-                    mode="a",
-                    group=f"other_data/{k}",
-                    auto_complex=True,
-                )
+                try:
+                    v.to_netcdf(
+                        filename,
+                        format="NETCDF4",
+                        engine=netcdf_engine,
+                        mode="a",
+                        group=f"other_data/{k}",
+                        auto_complex=True,
+                    )
+                except TypeError as e:
+                    if "auto_complex" in str(e):
+                        # try without auto_complex (H5NetCDF engine does not support it. This is likely a bug in xarray)
+                        v.to_netcdf(
+                            filename,
+                            format="NETCDF4",
+                            engine=netcdf_engine,
+                            mode="a",
+                            group=f"other_data/{k}",
+                        )
             else:
                 raise SMRTError(
                     f"Result.save: other_data must be a dict of xarray.DataArray or xarray.Dataset. Got {type(v)}"
