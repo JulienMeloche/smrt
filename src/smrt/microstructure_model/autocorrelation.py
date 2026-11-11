@@ -9,9 +9,8 @@ import copy
 import numpy as np
 from scipy.fftpack import dst
 
+from smrt.core.error import SMRTError
 from smrt.core.globalconstants import TWO_PI
-
-from ..core.error import SMRTError
 
 
 class AutocorrelationBase(object):

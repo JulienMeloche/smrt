@@ -1,4 +1,4 @@
-from .layer import make_microstructure_model
+from smrt.core.layer import make_microstructure_model
 
 
 def test_microstructure_model():

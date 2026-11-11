@@ -12,10 +12,9 @@ This atmosphere is a special case using climatology. Please refer to the general
 from pyrtlib.climatology.atmospheric_profiles import AtmosphericProfiles as atmp
 from pyrtlib.utils import mr2rh, ppmv2gkg
 
-from ..core.error import SMRTError
-
 # local import
-from .pyrtlib_atmosphere import PyRTlibAtmosphereBase
+from smrt.atmosphere.pyrtlib_atmosphere import PyRTlibAtmosphereBase
+from smrt.core.error import SMRTError
 
 
 class PyRTlibClimatologyAtmosphere(PyRTlibAtmosphereBase):

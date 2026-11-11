@@ -9,10 +9,10 @@ This model is only compatible with the Independent Sphere microstructure model
 
 import numpy as np
 
-from ..core.error import SMRTError
-from ..core.globalconstants import WAVENUMBER_PER_HZ
-from ..core.lib import smrt_matrix
-from .emmodel_utils import IsotropicScatteringMixin, rayleigh_scattering_matrix_and_angle
+from smrt.core.error import SMRTError
+from smrt.core.globalconstants import WAVENUMBER_PER_HZ
+from smrt.core.lib import smrt_matrix
+from smrt.emmodel.emmodel_utils import IsotropicScatteringMixin, rayleigh_scattering_matrix_and_angle
 
 
 class Rayleigh(IsotropicScatteringMixin):

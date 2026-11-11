@@ -12,7 +12,7 @@ Example::
     snowpack.layers[0].effective_permittivity = eff_eps
 """
 
-from .rayleigh import Rayleigh
+from smrt.emmodel.rayleigh import Rayleigh
 
 
 class Prescribed_KsKaEps(Rayleigh):

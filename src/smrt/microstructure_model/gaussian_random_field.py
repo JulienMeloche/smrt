@@ -14,7 +14,7 @@ from scipy.special import erfinv
 from smrt.core.globalconstants import TWO_PI
 
 # from scipy.special import erfcinv
-from .autocorrelation import Autocorrelation
+from smrt.microstructure_model.autocorrelation import Autocorrelation
 
 
 class GaussianRandomField(Autocorrelation):

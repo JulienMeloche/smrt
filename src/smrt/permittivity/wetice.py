@@ -3,10 +3,10 @@
 
 import numpy as np
 
-from ..core.layer import layer_properties
-from .generic_mixing_formula import maxwell_garnett_for_spheres, polder_van_santen
-from .ice import ice_permittivity_maetzler06
-from .water import water_permittivity_maetzler87
+from smrt.core.layer import layer_properties
+from smrt.permittivity.generic_mixing_formula import maxwell_garnett_for_spheres, polder_van_santen
+from smrt.permittivity.ice import ice_permittivity_maetzler06
+from smrt.permittivity.water import water_permittivity_maetzler87
 
 
 @layer_properties("temperature", "liquid_water")

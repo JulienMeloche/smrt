@@ -16,10 +16,10 @@ Note:
 
 import numpy as np
 
-from ..core.error import SMRTError, smrt_warn
-from ..core.globalconstants import DENSITY_OF_ICE, DENSITY_OF_WATER, FREEZING_POINT
-from ..core.layer import layer_properties
-from .generic_mixing_formula import (
+from smrt.core.error import SMRTError, smrt_warn
+from smrt.core.globalconstants import DENSITY_OF_ICE, DENSITY_OF_WATER, FREEZING_POINT
+from smrt.core.layer import layer_properties
+from smrt.permittivity.generic_mixing_formula import (
     polder_van_santen,
     polder_van_santen_three_components,
     polder_van_santen_three_spherical_components,
@@ -83,11 +83,11 @@ def wetsnow_permittivity_tinga73(
     Va_i = (DENSITY_OF_ICE / density) * (1 + W / (1 - W))
 
     if water_permittivity_model is None:
-        from .water import water_permittivity_tiuri80
+        from smrt.permittivity.water import water_permittivity_tiuri80
 
         water_permittivity_model = water_permittivity_tiuri80
     if ice_permittivity_model is None:
-        from .ice import ice_permittivity_tiuri84
+        from smrt.permittivity.ice import ice_permittivity_tiuri84
 
         ice_permittivity_model = ice_permittivity_tiuri84
 
@@ -475,7 +475,7 @@ def wetsnow_permittivity_wiesmann99(frequency, temperature, density, liquid_wate
         raise SMRTError("Liquid water is positive and temperature is set below freezing. This seems incompatible.")
 
     if ice_permittivity_model is None:
-        from .ice import ice_permittivity_maetzler06
+        from smrt.permittivity.ice import ice_permittivity_maetzler06
 
         ice_permittivity_model = ice_permittivity_maetzler06
 
@@ -728,12 +728,12 @@ def drysnow_permittivity_maetzler96(density, e0=1, eps=3.185):
 
 def default_ice_water_permittivity(ice_permittivity_model, water_permittivity_model):
     if ice_permittivity_model is None:
-        from .ice import ice_permittivity_maetzler06
+        from smrt.permittivity.ice import ice_permittivity_maetzler06
 
         ice_permittivity_model = ice_permittivity_maetzler06
 
     if water_permittivity_model is None:
-        from .water import water_permittivity_maetzler87
+        from smrt.permittivity.water import water_permittivity_maetzler87
 
         water_permittivity_model = water_permittivity_maetzler87
 

@@ -12,7 +12,7 @@ import warnings
 import numpy as np
 
 # local import
-from .autocorrelation import Autocorrelation
+from smrt.microstructure_model.autocorrelation import Autocorrelation
 
 
 class SampledAutocorrelation(Autocorrelation):

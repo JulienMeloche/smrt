@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
-from ..inputs.make_medium import make_snowpack
-from .atmosphere import AtmosphereBase
-from .error import SMRTError
-from .interface import Substrate
+from smrt.core.atmosphere import AtmosphereBase
+from smrt.core.error import SMRTError
+from smrt.core.interface import Substrate
+from smrt.inputs.make_medium import make_snowpack
 
 
 def test_profile():

@@ -8,9 +8,9 @@ This model is only compatible with the Exponential autocorrelation function only
 
 import numpy as np
 
-from ..core.globalconstants import WAVENUMBER_PER_HZ
-from ..permittivity.generic_mixing_formula import polder_van_santen
-from .rayleigh import Rayleigh
+from smrt.core.globalconstants import WAVENUMBER_PER_HZ
+from smrt.emmodel.rayleigh import Rayleigh
+from smrt.permittivity.generic_mixing_formula import polder_van_santen
 
 
 class SFT_Rayleigh(Rayleigh):

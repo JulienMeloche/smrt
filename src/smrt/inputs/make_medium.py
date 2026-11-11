@@ -275,7 +275,7 @@ def make_snow_layer(
     if ice_permittivity_model is None:
         # must import this here instead of the top of the file because of cross-dependencies
         # default ice permittivity model, use ice_permittivity_maetzler06 for dry snow and add support for wet snow
-        from ..permittivity.wetice import wetice_permittivity_bohren83
+        from smrt.permittivity.wetice import wetice_permittivity_bohren83
 
         ice_permittivity_model = wetice_permittivity_bohren83
 

@@ -10,12 +10,12 @@ from abc import ABC, abstractmethod
 import numpy as np
 import scipy.integrate
 
-from ..core.error import SMRTError
+from smrt.core.error import SMRTError
 
 # local import
-from ..core.globalconstants import TWO_PI, WAVENUMBER_PER_HZ
-from ..core.lib import smrt_matrix
-from .emmodel_utils import (
+from smrt.core.globalconstants import TWO_PI, WAVENUMBER_PER_HZ
+from smrt.core.lib import smrt_matrix
+from smrt.emmodel.emmodel_utils import (
     GenericFTPhaseMixin,
     IsotropicScatteringMixin,
     rayleigh_scattering_matrix_and_angle,

@@ -31,7 +31,7 @@ def make_interface(inst_class_or_modulename, broadcast=True, **kwargs):
     """
     # import the module
     if inst_class_or_modulename is None:
-        from ..interface.flat import (
+        from smrt.interface.flat import (
             Flat,
         )  # core should not depend on something defined in interface...
 

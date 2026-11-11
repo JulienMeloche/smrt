@@ -36,9 +36,9 @@ import math
 
 # other import
 # local import
-from ..core.error import SMRTError, smrt_warn
-from ..core.globalconstants import C_SPEED, TWO_PI
-from .rayleigh import Rayleigh
+from smrt.core.error import SMRTError, smrt_warn
+from smrt.core.globalconstants import C_SPEED, TWO_PI
+from smrt.emmodel.rayleigh import Rayleigh
 
 #
 # DMRT short range derives from Rayleigh because it has the same phase matrix

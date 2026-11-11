@@ -70,9 +70,8 @@ from smrt.core.globalconstants import C_SPEED
 from smrt.core.plugin import import_class
 from smrt.core.result import AltimetryResult
 from smrt.interface.flat import Flat
-
-from .delay_doppler_model.delay_doppler_utils import delay_sampling_vector, doppler_frequency_vector
-from .delay_doppler_model.dinardo18 import Dinardo18
+from smrt.rtsolver.delay_doppler_model.delay_doppler_utils import delay_sampling_vector, doppler_frequency_vector
+from smrt.rtsolver.delay_doppler_model.dinardo18 import Dinardo18
 
 
 class NadirSARAltimetry(object):

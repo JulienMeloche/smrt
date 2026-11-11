@@ -107,15 +107,14 @@ from typing import Type, Union
 
 import pandas as pd
 
+from smrt.core import lib
+from smrt.core.error import SMRTError
+from smrt.core.plugin import import_class
+from smrt.core.result import concat_results
+from smrt.core.sensitivity_study import SensitivityStudy
+from smrt.core.sensor import SensorBase
 from smrt.runner.joblib_runner import JoblibParallelRunner
 from smrt.runner.sequential_runner import SequentialRunner
-
-from . import lib
-from .error import SMRTError
-from .plugin import import_class
-from .result import concat_results
-from .sensitivity_study import SensitivityStudy
-from .sensor import SensorBase
 
 
 def make_model(
@@ -640,6 +639,6 @@ class Model(object):
             return result
 
     def run_later(self, sensor, snowpack, **kwargs):
-        from .run_promise import RunPromise  # local import to avoid start time
+        from smrt.core.run_promise import RunPromise  # local import to avoid start time
 
         return RunPromise(self, sensor, snowpack, kwargs)

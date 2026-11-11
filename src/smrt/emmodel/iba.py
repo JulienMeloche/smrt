@@ -16,22 +16,21 @@ References:
 
 # other import
 import numpy as np
-import scipy.fftpack
 import scipy.integrate
 
 # local import
-from ..core.error import SMRTError, smrt_warn
-from ..core.globalconstants import WAVENUMBER_PER_HZ
-from ..core.lib import smrt_matrix
-from ..permittivity.depolarization_factors import depolarization_factors_spheroids
-from ..permittivity.generic_mixing_formula import polder_van_santen
-from .emmodel_utils import (
+from smrt.core.error import SMRTError, smrt_warn
+from smrt.core.globalconstants import WAVENUMBER_PER_HZ
+from smrt.core.lib import smrt_matrix
+from smrt.emmodel.emmodel_utils import (
     AdjustableEffectivePermittivityMixin,
     GenericFTPhaseMixin,
     IsotropicScatteringMixin,
     derived_EMModel,
     rayleigh_scattering_matrix_and_angle,
 )
+from smrt.permittivity.depolarization_factors import depolarization_factors_spheroids
+from smrt.permittivity.generic_mixing_formula import polder_van_santen
 
 #
 # For developers: all emmodel must implement the `effective_permittivity`, `ke` and `phase` functions with the same

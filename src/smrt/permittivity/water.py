@@ -3,9 +3,9 @@
 
 import numpy as np
 
-from ..core.error import SMRTError
-from ..core.globalconstants import FREEZING_POINT, TWO_PI, GHz
-from ..core.layer import layer_properties
+from smrt.core.error import SMRTError
+from smrt.core.globalconstants import FREEZING_POINT, TWO_PI, GHz
+from smrt.core.layer import layer_properties
 
 
 @layer_properties("temperature")

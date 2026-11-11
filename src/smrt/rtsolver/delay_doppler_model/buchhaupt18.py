@@ -19,8 +19,11 @@ import scipy.integrate
 from smrt.core.error import SMRTError, smrt_warn
 from smrt.core.globalconstants import C_SPEED, LOG4
 from smrt.core.terrain import TerrainInfo
-
-from .delay_doppler_utils import delay_compensation, ft_ptr_function, triangular_function
+from smrt.rtsolver.delay_doppler_model.delay_doppler_utils import (
+    delay_compensation,
+    ft_ptr_function,
+    triangular_function,
+)
 
 
 class Buchhaupt18(object):

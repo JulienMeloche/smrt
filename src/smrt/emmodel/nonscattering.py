@@ -8,10 +8,10 @@
 import numpy as np
 
 # local import
-from ..core.globalconstants import WAVENUMBER_PER_HZ
-from ..core.lib import len_atleast_1d, smrt_matrix
-from ..permittivity.generic_mixing_formula import polder_van_santen
-from .emmodel_utils import IsotropicScatteringMixin, extinction_matrix
+from smrt.core.globalconstants import WAVENUMBER_PER_HZ
+from smrt.core.lib import len_atleast_1d, smrt_matrix
+from smrt.emmodel.emmodel_utils import IsotropicScatteringMixin, extinction_matrix
+from smrt.permittivity.generic_mixing_formula import polder_van_santen
 
 
 class NonScattering(IsotropicScatteringMixin):

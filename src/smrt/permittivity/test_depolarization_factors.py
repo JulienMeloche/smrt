@@ -1,6 +1,6 @@
 import pytest
 
-from .depolarization_factors import depolarization_factors_spheroids
+from smrt.permittivity.depolarization_factors import depolarization_factors_spheroids
 
 high_tolerance = 1e-8
 mid_tolerance = 1e-6

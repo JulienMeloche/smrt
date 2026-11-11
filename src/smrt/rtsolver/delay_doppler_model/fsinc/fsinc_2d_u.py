@@ -1,6 +1,6 @@
 import fsinc
 
-from .fsinc_2d import sinc2d
+from smrt.rtsolver.delay_doppler_model.fsinc.fsinc_2d import sinc2d
 
 
 def sinc2d_interp_u(x, y, s, xB, yB, xp, yp):

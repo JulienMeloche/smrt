@@ -1,7 +1,7 @@
 import finufft as nufft
 import numpy as np
 
-from . import fastgl
+from smrt.rtsolver.delay_doppler_model.fsinc import fastgl
 
 
 def sinc2d(x, y, s, xp, yp, norm=False, eps=1.0e-6):

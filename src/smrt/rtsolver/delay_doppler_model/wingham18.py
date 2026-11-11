@@ -21,8 +21,7 @@ from scipy import LowLevelCallable
 from smrt.core.error import SMRTError
 from smrt.core.globalconstants import C_SPEED, TWO_PI
 from smrt.core.terrain import TerrainInfo
-
-from .delay_doppler_utils import (
+from smrt.rtsolver.delay_doppler_model.delay_doppler_utils import (
     check_low_ndoppler,
     delay_compensation,
     delay_sampling_vector,

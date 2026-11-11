@@ -1,7 +1,7 @@
 import fsinc
 import numpy as np
 
-from .fsinc_1d import sinc1d
+from smrt.rtsolver.delay_doppler_model.fsinc.fsinc_1d import sinc1d
 
 
 def sinc1d_interp_u(x, s, xp):

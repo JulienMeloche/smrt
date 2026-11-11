@@ -23,12 +23,12 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from ..interface.flat import (
+from smrt.core.error import SMRTError
+from smrt.core.interface import SubstrateBase
+from smrt.core.layer import Layer
+from smrt.interface.flat import (
     Flat,
 )  # core should not depend on something defined in interface...
-from .error import SMRTError
-from .interface import SubstrateBase
-from .layer import Layer
 
 
 class Snowpack(object):
@@ -267,7 +267,7 @@ class Snowpack(object):
 
     def check_addition_validity(self, other):
         # import here to avoid circular reference
-        from .atmosphere import AtmosphereBase
+        from smrt.core.atmosphere import AtmosphereBase
 
         if isinstance(other, Layer):
             # this is valid, pass

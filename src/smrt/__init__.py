@@ -6,53 +6,53 @@ if (sys.version_info[0] == 2) or ((sys.version_info[0] == 3) and (sys.version_in
     raise RuntimeError("Python 3.10 and lower are not supported anymore")
 
 
-from .core import sensor as sensor
-from .core.error import SMRTError as SMRTError
-from .core.globalconstants import (
+from smrt.core import sensor as sensor
+from smrt.core.error import SMRTError as SMRTError
+from smrt.core.globalconstants import (
     PSU as PSU,
 )
-from .core.globalconstants import (
+from smrt.core.globalconstants import (
     GHz as GHz,
 )
-from .core.globalconstants import (
+from smrt.core.globalconstants import (
     cm as cm,
 )
-from .core.globalconstants import (
+from smrt.core.globalconstants import (
     micron as micron,
 )
-from .core.globalconstants import (
+from smrt.core.globalconstants import (
     mm as mm,
 )
-from .core.model import (
+from smrt.core.model import (
     make_emmodel as make_emmodel,
 )
-from .core.model import (
+from smrt.core.model import (
     make_model as make_model,
 )
-from .core.model import (
+from smrt.core.model import (
     make_rtsolver as make_rtsolver,
 )
-from .core.plugin import register_package as register_package
-from .core.result import open_result as open_result
-from .core.sensitivity_study import sensitivity_study as sensitivity_study
-from .inputs import sensor_list as sensor_list
-from .inputs.make_medium import (
+from smrt.core.plugin import register_package as register_package
+from smrt.core.result import open_result as open_result
+from smrt.core.sensitivity_study import sensitivity_study as sensitivity_study
+from smrt.inputs import sensor_list as sensor_list
+from smrt.inputs.make_medium import (
     make_atmosphere as make_atmosphere,
 )
-from .inputs.make_medium import (
+from smrt.inputs.make_medium import (
     make_ice_column as make_ice_column,
 )
-from .inputs.make_medium import (
+from smrt.inputs.make_medium import (
     make_interface as make_interface,
 )
-from .inputs.make_medium import (
+from smrt.inputs.make_medium import (
     make_snow_layer as make_snow_layer,
 )
-from .inputs.make_medium import (
+from smrt.inputs.make_medium import (
     make_snowpack as make_snowpack,
 )
-from .inputs.make_medium import (
+from smrt.inputs.make_medium import (
     make_water_body as make_water_body,
 )
-from .inputs.make_soil import make_soil as make_soil
-from .inputs.make_soil import make_soil_substrate as make_soil_substrate
+from smrt.inputs.make_soil import make_soil as make_soil
+from smrt.inputs.make_soil import make_soil_substrate as make_soil_substrate

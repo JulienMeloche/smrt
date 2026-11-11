@@ -1,12 +1,8 @@
 import numpy as np
 import pytest
 
-from smrt.permittivity.ice import ice_permittivity_maetzler06
-
-from ..core.error import SMRTError, SMRTWarning
-from ..interface.flat import Flat
-from ..interface.transparent import Transparent
-from .make_medium import (
+from smrt.core.error import SMRTError, SMRTWarning
+from smrt.inputs.make_medium import (
     make_ice_column,
     make_medium,
     make_slush,
@@ -15,6 +11,9 @@ from .make_medium import (
     make_transparent_volume,
     make_water_body,
 )
+from smrt.interface.flat import Flat
+from smrt.interface.transparent import Transparent
+from smrt.permittivity.ice import ice_permittivity_maetzler06
 
 
 def test_make_snowpack():

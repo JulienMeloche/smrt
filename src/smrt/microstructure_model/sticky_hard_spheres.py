@@ -17,9 +17,9 @@ Notes:
 
 import numpy as np
 
-from ..core.error import SMRTError
-from ..core.globalconstants import DENSITY_OF_ICE
-from .autocorrelation import Autocorrelation
+from smrt.core.error import SMRTError
+from smrt.core.globalconstants import DENSITY_OF_ICE
+from smrt.microstructure_model.autocorrelation import Autocorrelation
 
 
 class StickyHardSpheres(Autocorrelation):

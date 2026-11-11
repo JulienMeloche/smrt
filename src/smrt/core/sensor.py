@@ -30,10 +30,9 @@ from typing import Optional
 import numpy as np
 import numpy.typing as npt
 
-from ..core.globalconstants import C_SPEED, EARTH_RADIUS, WAVENUMBER_PER_HZ
-
 # local import
-from .error import SMRTError, smrt_warn
+from smrt.core.error import SMRTError, smrt_warn
+from smrt.core.globalconstants import C_SPEED, EARTH_RADIUS, WAVENUMBER_PER_HZ
 
 
 class SensorBase(object):

@@ -11,10 +11,10 @@ or small scatterers). A non-local version has been devised recently.
 import numpy as np
 import scipy.integrate
 
+from smrt.emmodel.sce_common import SCEBase
+
 # local import
 from smrt.permittivity.generic_mixing_formula import maxwell_garnett_for_spheres
-
-from .sce_common import SCEBase
 
 #
 # For developers: all emmodel must implement the `effective_permittivity`, `ke` and `phase` functions with the same

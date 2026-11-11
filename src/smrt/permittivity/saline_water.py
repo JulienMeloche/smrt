@@ -11,9 +11,8 @@ from smrt.core.globalconstants import (
     TWO_PI,
     GHz,
 )
-
-from ..core.layer import layer_properties
-from .brine import (
+from smrt.core.layer import layer_properties
+from smrt.permittivity.brine import (
     brine_conductivity_stogryn85,
     brine_relaxation_time_stogryn85,
     permittivity_high_frequency_limit_stogryn85,

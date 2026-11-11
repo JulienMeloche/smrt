@@ -4,8 +4,8 @@ import pickle
 import random
 from uuid import uuid4
 
-from .error import SMRTError
-from .filelock import FileLock, Timeout
+from smrt.core.error import SMRTError
+from smrt.core.filelock import FileLock, Timeout
 
 
 def honour_all_promises(directory_or_filename, save_result_to=None, show_progress=True, force_compute=True):

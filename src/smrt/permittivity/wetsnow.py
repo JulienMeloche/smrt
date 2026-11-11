@@ -8,9 +8,9 @@ import warnings
 
 import numpy as np
 
-from ..core.layer import layer_properties
-from .ice import ice_permittivity_maetzler06
-from .water import water_permittivity
+from smrt.core.layer import layer_properties
+from smrt.permittivity.ice import ice_permittivity_maetzler06
+from smrt.permittivity.water import water_permittivity
 
 warnings.warn(
     "The wetsnow module is to be removed in a future version."

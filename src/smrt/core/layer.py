@@ -27,9 +27,9 @@ import copy
 from functools import wraps
 
 # local import
-from .error import SMRTError
-from .globalconstants import FREEZING_POINT
-from .plugin import import_class
+from smrt.core.error import SMRTError
+from smrt.core.globalconstants import FREEZING_POINT
+from smrt.core.plugin import import_class
 
 
 class Layer(object):

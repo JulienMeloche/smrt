@@ -12,10 +12,9 @@ also provides a good reference for this implementation. The only difference is i
 # other import
 
 # local import
+from smrt.emmodel.emmodel_utils import AdjustableEffectivePermittivityMixin, derived_EMModel
+from smrt.emmodel.sce_common import SCEBase
 from smrt.permittivity.generic_mixing_formula import polder_van_santen
-
-from .emmodel_utils import AdjustableEffectivePermittivityMixin, derived_EMModel
-from .sce_common import SCEBase
 
 #
 # For developers: all emmodel must implement the `effective_permittivity`, `ke` and `phase` functions with the same

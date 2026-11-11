@@ -8,12 +8,12 @@ from __future__ import print_function
 # other import
 import numpy as np
 
-from ..core.error import SMRTError, smrt_warn
+from smrt.core.error import SMRTError, smrt_warn
 
 # local import
-# from ..core.error import SMRTError
-from ..core.globalconstants import C_SPEED, DENSITY_OF_ICE, FREEZING_POINT
-from ..core.layer import layer_properties
+# from smrt.core.error import SMRTError
+from smrt.core.globalconstants import C_SPEED, DENSITY_OF_ICE, FREEZING_POINT
+from smrt.core.layer import layer_properties
 
 #
 # for developers: see note in __init__.py

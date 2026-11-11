@@ -28,13 +28,17 @@ import numpy.typing as npt
 from smrt.core.error import SMRTError, smrt_warn
 from smrt.core.globalconstants import C_SPEED, TWO_PI
 from smrt.core.terrain import TerrainInfo, generate_dem
-
-from .delay_doppler_utils import delay_compensation, delay_sampling_vector, ptr_function, sinc2
+from smrt.rtsolver.delay_doppler_model.delay_doppler_utils import (
+    delay_compensation,
+    delay_sampling_vector,
+    ptr_function,
+    sinc2,
+)
 
 try:
     import finufft
 
-    from .fsinc.fsinc_1d import sincsq1d
+    from smrt.rtsolver.delay_doppler_model.fsinc.fsinc_1d import sincsq1d
 except ImportError:
     smrt_warn(
         "The package finufft is not installed. The fast sinc^2 transform will not be available. "

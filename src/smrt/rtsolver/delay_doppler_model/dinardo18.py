@@ -23,8 +23,7 @@ import scipy.special
 from smrt.core.error import SMRTError
 from smrt.core.globalconstants import C_SPEED, LOG2, TWO_PI
 from smrt.core.terrain import TerrainInfo
-
-from .delay_doppler_utils import (
+from smrt.rtsolver.delay_doppler_model.delay_doppler_utils import (
     check_low_ndoppler,
     delay_sampling_vector,
     doppler_frequency_vector,

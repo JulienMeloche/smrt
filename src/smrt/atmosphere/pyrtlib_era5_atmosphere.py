@@ -21,7 +21,7 @@ from pyrtlib.apiwebservices import ERA5Reanalysis
 from pyrtlib.utils import kgkg_to_kgm3
 
 # local import
-from .pyrtlib_atmosphere import PyRTlibAtmosphereBase
+from smrt.atmosphere.pyrtlib_atmosphere import PyRTlibAtmosphereBase
 
 
 class PyRTlibERA5Atmosphere(PyRTlibAtmosphereBase):

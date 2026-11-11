@@ -6,8 +6,7 @@ import numpy as np
 
 from smrt.core.error import SMRTError, smrt_warn
 from smrt.core.globalconstants import DENSITY_OF_ICE, FREEZING_POINT, PSU
-
-from ..core.layer import layer_properties
+from smrt.core.layer import layer_properties
 
 
 def brine_conductivity_stogryn85(temperature):

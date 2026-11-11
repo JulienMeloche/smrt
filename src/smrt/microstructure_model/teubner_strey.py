@@ -11,8 +11,7 @@ Args:
 import numpy as np
 
 from smrt.core.globalconstants import TWO_PI
-
-from .autocorrelation import Autocorrelation
+from smrt.microstructure_model.autocorrelation import Autocorrelation
 
 
 class TeubnerStrey(Autocorrelation):

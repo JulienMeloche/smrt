@@ -22,8 +22,13 @@ import numpy.typing as npt
 
 from smrt.core.globalconstants import C_SPEED, LOG4
 from smrt.core.terrain import TerrainInfo, generate_dem
-
-from .delay_doppler_utils import check_low_ndoppler, delay_compensation, numerical_convolution, ptr_function, sinc2
+from smrt.rtsolver.delay_doppler_model.delay_doppler_utils import (
+    check_low_ndoppler,
+    delay_compensation,
+    numerical_convolution,
+    ptr_function,
+    sinc2,
+)
 
 
 class Boy17(object):

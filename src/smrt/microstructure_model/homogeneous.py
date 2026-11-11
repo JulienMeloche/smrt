@@ -7,7 +7,7 @@ Args:
 """
 
 # local import
-from .autocorrelation import Autocorrelation
+from smrt.microstructure_model.autocorrelation import Autocorrelation
 
 
 class Homogeneous(Autocorrelation):

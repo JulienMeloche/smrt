@@ -12,7 +12,7 @@ Args:
 
 import numpy as np
 
-from .unified_autocorrelation import UnifiedAutocorrelation
+from smrt.microstructure_model.unified_autocorrelation import UnifiedAutocorrelation
 
 
 class UnifiedStickyHardSpheres(UnifiedAutocorrelation):

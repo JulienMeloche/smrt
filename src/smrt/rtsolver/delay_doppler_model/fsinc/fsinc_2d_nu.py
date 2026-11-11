@@ -1,8 +1,8 @@
 import fsinc
 import numpy as np
 
-from .fsinc_2d import sinc2d, sincsq2d
-from .jacobian import jacobian_2d_ktree
+from smrt.rtsolver.delay_doppler_model.fsinc.fsinc_2d import sinc2d, sincsq2d
+from smrt.rtsolver.delay_doppler_model.fsinc.jacobian import jacobian_2d_ktree
 
 
 def sinc2d_interp_nu2(x, y, s, B, xp, yp):

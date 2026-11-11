@@ -1,4 +1,4 @@
-from .exponential import Exponential
+from smrt.microstructure_model.exponential import Exponential
 
 
 def test_constructor():

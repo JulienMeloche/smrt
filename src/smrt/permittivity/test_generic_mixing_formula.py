@@ -3,8 +3,8 @@
 import numpy as np
 import pytest
 
-from ..core.globalconstants import DENSITY_OF_ICE
-from .generic_mixing_formula import general_polder_van_santen, polder_van_santen
+from smrt.core.globalconstants import DENSITY_OF_ICE
+from smrt.permittivity.generic_mixing_formula import general_polder_van_santen, polder_van_santen
 
 
 @pytest.mark.parametrize(

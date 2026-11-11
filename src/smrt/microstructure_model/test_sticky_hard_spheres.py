@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from .sticky_hard_spheres import StickyHardSpheres
+from smrt.microstructure_model.sticky_hard_spheres import StickyHardSpheres
 
 
 def test_constructor():

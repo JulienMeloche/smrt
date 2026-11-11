@@ -13,7 +13,7 @@ Args:
 import numpy as np
 
 # local import
-from .unified_autocorrelation import UnifiedAutocorrelation
+from smrt.microstructure_model.unified_autocorrelation import UnifiedAutocorrelation
 
 
 class UnifiedScaledExponential(UnifiedAutocorrelation):

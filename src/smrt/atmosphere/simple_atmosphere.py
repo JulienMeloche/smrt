@@ -40,10 +40,9 @@ Examples::
 # other import
 import numpy as np
 
-from smrt.core.error import SMRTError
-
 # local import
-from ..core.atmosphere import AtmosphereBase, make_atmosphere_results
+from smrt.core.atmosphere import AtmosphereBase, make_atmosphere_results
+from smrt.core.error import SMRTError
 
 
 class SimpleAtmosphere(AtmosphereBase):

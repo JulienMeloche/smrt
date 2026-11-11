@@ -43,10 +43,9 @@ import numpy as np
 from smrt.core.error import SMRTError, smrt_warn
 from smrt.core.result import make_result
 from smrt.interface.flat import Flat as iFlat
+from smrt.rtsolver.multifresnel.multifresnel import compute_emerging_radiation, compute_matrix_slab
 from smrt.rtsolver.rtsolver_utils import prepare_kskaeps_profile_information
 from smrt.substrate.flat import Flat as sFlat
-
-from .multifresnel.multifresnel import compute_emerging_radiation, compute_matrix_slab
 
 
 class MultiFresnelThermalEmission(object):

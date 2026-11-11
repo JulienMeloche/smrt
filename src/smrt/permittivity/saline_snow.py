@@ -16,6 +16,7 @@ import warnings
 
 import numpy as np
 
+from smrt.core.error import SMRTError
 from smrt.core.globalconstants import (
     DENSITY_OF_ICE,
     FREEZING_POINT,
@@ -24,17 +25,15 @@ from smrt.core.globalconstants import (
     TWO_PI,
     GHz,
 )
-
-from ..core.error import SMRTError
-from ..core.layer import layer_properties
-from .brine import (
+from smrt.core.layer import layer_properties
+from smrt.permittivity.brine import (
     brine_conductivity_stogryn85,
     brine_relaxation_time_stogryn85,
     brine_salinity,
     permittivity_high_frequency_limit_stogryn85,
     static_brine_permittivity_stogryn85,
 )
-from .saline_water import (
+from smrt.permittivity.saline_water import (
     seawater_permittivity_stogryn71,
     seawater_permittivity_stogryn95,
 )

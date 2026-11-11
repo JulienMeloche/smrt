@@ -1,6 +1,6 @@
 # local import
-from ..core.globalconstants import DENSITY_OF_ICE
-from .autocorrelation import Autocorrelation
+from smrt.core.globalconstants import DENSITY_OF_ICE
+from smrt.microstructure_model.autocorrelation import Autocorrelation
 
 
 class UnifiedAutocorrelation(Autocorrelation):

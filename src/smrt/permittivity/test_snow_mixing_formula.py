@@ -2,8 +2,7 @@ import numpy as np
 import pytest
 
 from smrt.core.globalconstants import DENSITY_OF_ICE, DENSITY_OF_WATER
-
-from .snow_mixing_formula import (
+from smrt.permittivity.snow_mixing_formula import (
     wetsnow_permittivity_colbeck80_caseI,
     wetsnow_permittivity_colbeck80_caseII,
     wetsnow_permittivity_colbeck80_caseIII,

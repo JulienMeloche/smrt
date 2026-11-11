@@ -17,9 +17,8 @@ versions) which uses the MG permittivity.
 
 import numpy as np
 
+from smrt.emmodel.iba import IBA
 from smrt.permittivity.generic_mixing_formula import maxwell_garnett
-
-from .iba import IBA
 
 
 class IBA_MaxwellGarnett(IBA):

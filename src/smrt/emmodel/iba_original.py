@@ -10,7 +10,7 @@ Mätzler 1998.
 # Stdlib import
 
 # other import
-from .iba import IBA
+from smrt.emmodel.iba import IBA
 
 
 class IBA_original(IBA):

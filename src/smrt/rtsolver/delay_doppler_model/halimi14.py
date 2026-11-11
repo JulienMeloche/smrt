@@ -20,8 +20,7 @@ import numpy.typing as npt
 from smrt.core.error import smrt_warn
 from smrt.core.globalconstants import C_SPEED, LOG2
 from smrt.core.terrain import TerrainInfo
-
-from .delay_doppler_utils import (
+from smrt.rtsolver.delay_doppler_model.delay_doppler_utils import (
     check_low_ndoppler,
     delay_compensation,
     delay_sampling_vector,

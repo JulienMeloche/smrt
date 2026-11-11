@@ -3,10 +3,9 @@ from dataclasses import dataclass
 import numpy as np
 import xarray as xr
 
+from smrt.core.error import SMRTError
 from smrt.core.lib import inverse_planck_function, planck_function
-
-from .error import SMRTError
-from .snowpack import Snowpack
+from smrt.core.snowpack import Snowpack
 
 # this is a temporary solution to deal with Atmosphere.
 # user should not rely on this object. For temporary internal use only !!
