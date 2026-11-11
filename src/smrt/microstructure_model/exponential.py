@@ -21,7 +21,7 @@ class Exponential(Autocorrelation):
     # TODO. SSA as an alternative input or calculated
     # TODO. Make tests
 
-    args = ["frac_volume", "corr_length"]
+    args = ("frac_volume", "corr_length")
     optional_args = {}
 
     def __init__(self, params):

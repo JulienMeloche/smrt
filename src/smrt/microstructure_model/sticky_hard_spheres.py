@@ -25,7 +25,7 @@ from smrt.microstructure_model.autocorrelation import Autocorrelation
 class StickyHardSpheres(Autocorrelation):
     """ """
 
-    args = ["frac_volume", "radius"]
+    args = ("frac_volume", "radius")
     optional_args = {"stickiness": 1000}
 
     def __init__(self, params):

@@ -131,15 +131,15 @@ def make_medium(data, surface=None, interface=None, substrate=None, **kwargs):
 
     for medium, group_data in medium_chunks:
         if medium == "snow":
-            required_args = ["thickness", "microstructure_model", "density"]
+            required_args = ("thickness", "microstructure_model", "density")
             func = make_snowpack
         elif medium == "ice":
-            required_args = [
+            required_args = (
                 "ice_type",
                 "thickness",
                 "temperature",
                 "microstructure_model",
-            ]
+            )
             func = make_ice_column
         else:
             raise SMRTError(f"Unknown medium '{medium}' in data")

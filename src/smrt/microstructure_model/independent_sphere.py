@@ -14,7 +14,7 @@ from smrt.microstructure_model.autocorrelation import Autocorrelation
 
 
 class IndependentSphere(Autocorrelation):
-    args = ["frac_volume", "radius"]
+    args = ("frac_volume", "radius")
     optional_args = {}
 
     def __init__(self, params):

@@ -27,7 +27,7 @@ from smrt.core.interface import Substrate
 
 
 class SoilQNH(Substrate):
-    args = ["H"]
+    args = ("H",)
     optional_args = {"Q": 0.0, "N": 0.0, "Nv": np.nan, "Nh": np.nan}
 
     def adjust(self, rh, rv, mu1):

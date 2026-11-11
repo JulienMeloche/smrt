@@ -59,7 +59,7 @@ class IEM_Fung92(
         warning_handling: [Optional] Parameter that dictates how to handle wanring. Default is "print".
     """
 
-    args = ["roughness_rms", "corr_length"]
+    args = ("roughness_rms", "corr_length")
     optional_args = {
         "autocorrelation_function": "exponential",
         "warning_handling": "print",

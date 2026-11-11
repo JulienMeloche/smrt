@@ -19,7 +19,7 @@ from smrt.core.interface import Substrate
 
 
 class SoilWegmuller(Substrate):
-    args = ["roughness_rms"]
+    args = ("roughness_rms",)
     optional_args = {}
 
     def adjust(self, rh, rv, frequency, eps_1, mu1):

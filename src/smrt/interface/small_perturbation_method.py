@@ -59,7 +59,7 @@ class SmallPerturbationMethod(KirchoffApproximationCoherentInterfaceMixin, Hemis
         series_truncation: [Optional] Number of iterations to use in the summation of roughness spectra.
     """
 
-    args = ["roughness_rms", "corr_length"]
+    args = ("roughness_rms", "corr_length")
     optional_args = {
         "autocorrelation_function": "exponential",
     }

@@ -20,7 +20,7 @@ from smrt.microstructure_model.autocorrelation import Autocorrelation
 class GaussianRandomField(Autocorrelation):
     """ """
 
-    args = ["frac_volume", "corr_length", "repeat_distance"]
+    args = ("frac_volume", "corr_length", "repeat_distance")
     optional_args = {}
 
     def __init__(self, params):

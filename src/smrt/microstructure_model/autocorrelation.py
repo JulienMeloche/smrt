@@ -44,7 +44,7 @@ class AutocorrelationBase(object):
 
         upcls = cls
         while upcls is not AutocorrelationBase:
-            cls.all_required_arguments += getattr(upcls, "args", [])
+            cls.all_required_arguments += getattr(upcls, "args", ())
             if hasattr(upcls, "optional_args"):
                 cls.all_optional_arguments.update(
                     {k: v for k, v in upcls.optional_args.items() if k not in cls.all_optional_arguments}
@@ -55,7 +55,7 @@ class AutocorrelationBase(object):
     def valid_arguments(cls):
         if not hasattr(cls, "all_optional_arguments"):
             cls.compute_all_arguments()
-        return cls.all_required_arguments + list(cls.all_optional_arguments.keys())
+        return tuple(cls.all_required_arguments) + tuple(cls.all_optional_arguments.keys())
 
 
 class Autocorrelation(AutocorrelationBase):

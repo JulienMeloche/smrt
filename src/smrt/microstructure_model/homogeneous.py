@@ -11,7 +11,7 @@ from smrt.microstructure_model.autocorrelation import Autocorrelation
 
 
 class Homogeneous(Autocorrelation):
-    args = ["frac_volume"]
+    args = ("frac_volume",)
     optional_args = {}
 
     def __init__(self, params):

@@ -21,7 +21,7 @@ class SampledAutocorrelation(Autocorrelation):
     # TODO. SSA as an alternative input or calculated
     # TODO. Make tests
 
-    args = ["frac_volume", "lag", "acf"]
+    args = ("frac_volume", "lag", "acf")
     optional_args = {}
 
     def __init__(self, params):
