@@ -36,7 +36,7 @@ class Flat(Interface):
         r, _ = fresnel_reflection_matrix(eps_1, eps_2, mu1, npol)
         return r
 
-    def diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, dphi, npol):
+    def diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, phi_s, phi_i=0, npol=2):
         return smrt_matrix(0)
 
     def coherent_transmission_matrix(self, frequency, eps_1, eps_2, mu1, npol):
@@ -58,7 +58,7 @@ class Flat(Interface):
         t, _ = fresnel_transmission_matrix(eps_1, eps_2, mu1, npol)
         return t
 
-    def diffuse_transmission_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, dphi, npol):
+    def diffuse_transmission_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, phi_t, phi_i=0, npol=2):
         return smrt_matrix(0)
 
     def field_matrix(self, frequency, eps_1, eps_2, mu1):

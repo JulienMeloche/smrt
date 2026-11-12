@@ -15,9 +15,9 @@ def test_iem_fung92_biogoni10_continuty():
 
     mu = np.cos(np.deg2rad([30, 50, 60]))
 
-    R = iem_fung.diffuse_reflection_matrix(frequency, 1, eps_r, mu, mu, np.pi, 2, debug=True)
+    R = iem_fung.diffuse_reflection_matrix(frequency, 1, eps_r, mu, mu, phi_s=np.pi, npol=2, debug=True)
 
-    R2 = iem_fung_brogioni.diffuse_reflection_matrix(frequency, 1, eps_r, mu, mu, np.pi, 2, debug=True)
+    R2 = iem_fung_brogioni.diffuse_reflection_matrix(frequency, 1, eps_r, mu, mu, phi_s=np.pi, npol=2, debug=True)
 
     sigma_vv = dB(4 * np.pi * mu * R[0])
     sigma_hh = dB(4 * np.pi * mu * R[1])
@@ -38,7 +38,7 @@ def test_iem_fung92_brogioni10():
 
     mu = np.cos(np.deg2rad([30, 50, 60]))
 
-    R = iem_fung.diffuse_reflection_matrix(frequency, 1, eps_r, mu, mu, np.pi, 2, debug=True)
+    R = iem_fung.diffuse_reflection_matrix(frequency, 1, eps_r, mu, mu, phi_s=np.pi, npol=2, debug=True)
     sigma_vv = dB(4 * np.pi * mu * R[0])
     sigma_hh = dB(4 * np.pi * mu * R[1])
 

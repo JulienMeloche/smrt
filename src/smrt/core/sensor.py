@@ -50,6 +50,7 @@ class Sensor(SensorBase):
     frequency: npt.ArrayLike
     theta_inc: npt.ArrayLike
     theta: npt.ArrayLike
+    phi_inc: npt.ArrayLike
     phi: npt.ArrayLike
     polarization_inc: str
     polarization: str
@@ -59,7 +60,9 @@ class Sensor(SensorBase):
     def __init__(
         self,
         frequency=None,
+        *,
         theta_inc_deg=None,
+        phi_inc_deg=None,
         theta_deg=None,
         phi_deg=None,
         polarization_inc=None,
@@ -138,6 +141,12 @@ class Sensor(SensorBase):
             self.theta_inc = np.radians(self.theta_inc_deg)
             self.mu_i = np.cos(self.theta_inc)
 
+        if phi_inc_deg is not None:
+            self.phi_inc_deg = np.atleast_1d(phi_inc_deg).flatten().astype(dtype=float)
+            self.phi_inc = np.radians(self.phi_inc_deg)
+        else:
+            self.phi_inc = 0.0
+
     @property
     def wavelength(self):
         return C_SPEED / self.frequency
@@ -171,6 +180,7 @@ class Sensor(SensorBase):
         for axis in [
             "frequency",
             "theta_inc",
+            "phi_inc",
             "polarization_inc",
             "theta",
             "phi",
@@ -278,6 +288,7 @@ class RangingRadar(Sensor):
         pulse_duration=None,
         velocity=None,
         theta_inc_deg=None,
+        phi_inc_deg=None,
         theta_deg=None,
         phi_deg=None,
         polarization_inc=None,
@@ -313,6 +324,7 @@ class RangingRadar(Sensor):
         super().__init__(
             frequency=frequency,
             theta_inc_deg=theta_inc_deg,
+            phi_inc_deg=phi_inc_deg,
             theta_deg=theta_deg,
             phi_deg=phi_deg,
             polarization_inc=polarization_inc,
@@ -421,6 +433,7 @@ class Altimeter(RangingRadar):
             transmit_antenna_gain_db=transmit_antenna_gain_db,
             receive_antenna_gain_db=receive_antenna_gain_db,
             channel_map=channel_map,
+            phi_inc_deg=0,  # this is important to get backscatter with DORT
             phi_deg=180,  # this is important to get backscatter with DORT
         )
 

@@ -237,8 +237,9 @@ become a default in the future.""")
 
         return ks_int.real
 
-    def phase(self, mu_s, mu_i, dphi, npol=2):
+    def phase(self, mu_s, mu_i, phi_s, phi_i=0, npol=2):
         """IBA Phase function (not decomposed)."""
+        dphi = phi_s - phi_i
         p, sin_half_scatt = rayleigh_scattering_matrix_and_angle(mu_s, mu_i, dphi, npol)
 
         # IBA phase function = rayleigh phase function * angular part of microstructure term

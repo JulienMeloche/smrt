@@ -311,7 +311,8 @@ class Rayleigh(IsotropicScatteringMixin):
     # we use this one
     ft_even_phase = ft_even_phase_baseonUlaby
 
-    def phase(self, mu_s, mu_i, dphi, npol=2):
+    def phase(self, mu_s, mu_i, phi_s, phi_i=0, npol=2):
+        dphi = phi_s - phi_i
         p, sin_half_scatt = rayleigh_scattering_matrix_and_angle(mu_s, mu_i, dphi, npol)
 
         return smrt_matrix(1.5 * self._ks * p)

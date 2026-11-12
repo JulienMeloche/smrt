@@ -175,9 +175,10 @@ class DiscreteOrdinatesMixin(metaclass=ABCMeta):
             else:
                 raise NotImplementedError()
         else:
-            # TODO Ghi: deals with an array of phi
-            intensity[0:2] += intensity_m[0:2] * np.cos(m * sensor.phi)
-            intensity[2:] += intensity_m[2:] * np.sin(m * sensor.phi)
+            # TODO: deals with an array of phi
+            dphi = sensor.phi - sensor.phi_inc  # we assume isotropic azimuthal symmetry
+            intensity[0:2] += intensity_m[0:2] * np.cos(m * dphi)
+            intensity[2:] += intensity_m[2:] * np.sin(m * dphi)
 
     def interpolate_intensity(self, outmu, intensity):
         """Interpolate intensity.

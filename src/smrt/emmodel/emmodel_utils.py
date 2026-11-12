@@ -391,7 +391,7 @@ class GenericFTPhaseMixin(object):
 
         # compute the phase function
         def phase_function(dphi):
-            return self.phase(mu_s, mu_i, dphi, npol)
+            return self.phase(mu_s, mu_i, phi_s=dphi, npol=npol)
 
         if nsamples is None:
             nsamples = self.estimate_ft_number_samples(m_max)

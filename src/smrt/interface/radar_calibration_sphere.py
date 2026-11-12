@@ -14,7 +14,8 @@ class RadarCalibrationSphere(Interface):
     def specular_reflection_matrix(self, frequency, eps_1, eps_2, mu1, npol):
         return smrt_matrix(0)
 
-    def diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, dphi, npol):
+    def diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, phi_s, phi_i=0, npol=2):
+        dphi = phi_s - phi_i
         m = smrt_matrix.zeros((npol, len_atleast_1d(dphi), len_atleast_1d(mu_i)))
         m[0:2, :, :] = 1.0
 

@@ -68,9 +68,9 @@ class ThinVerticalCylinder(GenericFTPhaseMixin):
                 " scattering"
             )
 
-    def phase(self, mu_s, mu_i, dphi, npol=2):
+    def phase(self, mu_s, mu_i, phi_s, phi_i=0, npol=2):
         # sin of the incident and scattered directions
-        mu_s, sin_s, mu_i, sin_i, cosphi, sinphi = vectorize_angles(mu_s, mu_i, dphi)
+        mu_s, sin_s, mu_i, sin_i, cosphi, sinphi = vectorize_angles(mu_s, mu_i, phi_s - phi_i)
 
         # compute scattering direction vector
         ks = vector3.from_xyz(sin_s * cosphi, sin_s * sinphi, mu_s)

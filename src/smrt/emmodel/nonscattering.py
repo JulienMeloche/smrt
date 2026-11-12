@@ -62,13 +62,14 @@ class NonScattering(IsotropicScatteringMixin):
 
         return smrt_matrix.zeros((npol, npol, m_max + 1, len_atleast_1d(mu_s), len_atleast_1d(mu_i)))
 
-    def phase(self, mu_s, mu_i, dphi, npol=2):
+    def phase(self, mu_s, mu_i, phi_s, phi_i=0, npol=2):
         """Non-scattering phase matrix.
 
         Args:
             mu_s:
             mu_i:
-            dphi:
+            phi_s:
+            phi_i:
             npol:  (Default value = 2)
 
         Returns:
@@ -78,7 +79,7 @@ class NonScattering(IsotropicScatteringMixin):
             (
                 npol,
                 npol,
-                len_atleast_1d(dphi),
+                len_atleast_1d(phi_s - phi_i),
                 len_atleast_1d(mu_s),
                 len_atleast_1d(mu_i),
             )

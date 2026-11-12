@@ -110,7 +110,7 @@ def test_infinite_pack(setup_inf_snowpack):
     specific_intensity_conversion = (1 / emmodels.effective_permittivity.real) * (
         mu / snell_angle(1, emmodels.effective_permittivity.real, mu)
     )
-    phase = emmodels.phase(-mu, mu, np.pi, 2).values.squeeze() * specific_intensity_conversion
+    phase = emmodels.phase(-mu, mu, phi_s=np.pi, npol=2).values.squeeze() * specific_intensity_conversion
 
     # should be equal to the phase function * 1
     scattering_test = res.sigmaVV() * 2 * ke / mu

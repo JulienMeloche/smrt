@@ -17,7 +17,7 @@ def get_diffuse_reflection(go):
     mu_s = mu_i
     dphi = np.pi
 
-    m = go.diffuse_reflection_matrix(freq, eps_1, eps_2, mu_s, mu_i, dphi, 2)
+    m = go.diffuse_reflection_matrix(freq, eps_1, eps_2, mu_s, mu_i, phi_s=dphi, npol=2)
     return m.diagonal
 
 
@@ -65,8 +65,8 @@ def test_reflectance_reciprocity():
 
     for mu_i in np.linspace(0.1, 1, 10):
         for mu_s in np.linspace(0.1, 1, 10):
-            R = go.diffuse_reflection_matrix(10e9, eps_1, eps_2, mu_s, mu_i, dphi, 2).values
-            Rs = go.diffuse_reflection_matrix(10e9, eps_1, eps_2, mu_i, mu_s, dphi, 2).values
+            R = go.diffuse_reflection_matrix(10e9, eps_1, eps_2, mu_s, mu_i, phi_s=dphi, npol=2).values
+            Rs = go.diffuse_reflection_matrix(10e9, eps_1, eps_2, mu_i, mu_s, phi_s=dphi, npol=2).values
 
             np.testing.assert_allclose(R[1, 0, :] * mu_i, Rs[0, 1, :] * mu_s, atol=1e-3)
             np.testing.assert_allclose(R[0, 0, :] * mu_i, Rs[0, 0, :] * mu_s, atol=1e-3)
@@ -84,9 +84,30 @@ def test_transmission_reciprocity():
 
     for mu_i in np.linspace(0.1, 1, 10):
         for mu_t in np.linspace(0.1, 1, 10):
-            T = go.diffuse_transmission_matrix(10e9, eps_1, eps_2, mu_t, mu_i, dphi, 2).values
-            Tt = go.diffuse_transmission_matrix(10e9, eps_2, eps_1, mu_i, mu_t, dphi, 2).values
+            T = go.diffuse_transmission_matrix(10e9, eps_1, eps_2, mu_t, mu_i, phi_t=dphi, npol=2).values
+            Tt = go.diffuse_transmission_matrix(10e9, eps_2, eps_1, mu_i, mu_t, phi_t=dphi, npol=2).values
 
             np.testing.assert_allclose(T[1, 0, :] * mu_i * eps_1, Tt[0, 1, :] * mu_t * eps_2, atol=1e-3)
             np.testing.assert_allclose(T[0, 0, :] * mu_i * eps_1, Tt[0, 0, :] * mu_t * eps_2, atol=1e-3)
             np.testing.assert_allclose(T[1, 1, :] * mu_i * eps_1, Tt[1, 1, :] * mu_t * eps_2, atol=1e-3)
+
+
+def test_azimuth_difference_for_diffuse_matrices():
+    go = GeometricalOptics(mean_square_slope=0.5, shadow_correction=False)
+    phi_s = 0.8
+    phi_t = 0.8
+    phi_i = 0.2
+    phi_s_difference = phi_s - phi_i
+    phi_t_difference = phi_t - phi_i
+
+    reflection = go.diffuse_reflection_matrix(10e9, 1, 1.6, [0.4], [0.7], phi_s=phi_s, phi_i=phi_i, npol=2)
+    reflection_from_difference = go.diffuse_reflection_matrix(
+        10e9, 1, 1.6, [0.4], [0.7], phi_s=phi_s_difference, npol=2
+    )
+    np.testing.assert_allclose(reflection.values, reflection_from_difference.values)
+
+    transmission = go.diffuse_transmission_matrix(10e9, 1, 1.6, [0.4], [0.7], phi_t=phi_t, phi_i=phi_i, npol=2)
+    transmission_from_difference = go.diffuse_transmission_matrix(
+        10e9, 1, 1.6, [0.4], [0.7], phi_t=phi_t_difference, npol=2
+    )
+    np.testing.assert_allclose(transmission.values, transmission_from_difference.values)

@@ -1,5 +1,7 @@
 # coding: utf-8
 
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 
@@ -41,7 +43,7 @@ def test_generic_ft_even_matrix(setup_func_em):
     npol = 3
 
     def phase_function(dphi):
-        return em.phase(mu, mu, dphi, npol=npol)
+        return em.phase(mu, mu, phi_s=dphi, npol=npol)
 
     ft_even_p = generic_ft_even_matrix(phase_function, m_max=2)
 
@@ -50,3 +52,15 @@ def test_generic_ft_even_matrix(setup_func_em):
     for m in [0, 1, 2]:
         print("mode=", m)
         np.testing.assert_allclose(ft_even_p[:, :, m, :, :], ft_even_p2[:, :, m, :, :], atol=1e-8)  # atol is subjective
+
+
+def test_phase_azimuth_difference():
+    em = SimpleNamespace(_ks=1.0)
+    mu = np.array([0.3, 0.7])
+    phi_s = 0.8
+    phi_i = 0.2
+
+    phase = Rayleigh.phase(em, mu, mu, phi_s=phi_s, phi_i=phi_i, npol=3)
+    phase_from_difference = Rayleigh.phase(em, mu, mu, phi_s=phi_s - phi_i, npol=3)
+
+    np.testing.assert_allclose(phase.values, phase_from_difference.values)

@@ -158,11 +158,13 @@ def substrate_from_interface(interface_cls):
                 raise SMRTError(f"No permittivity_model have been given to the substrate '{interface_cls!s}'")
             return self.interface_inst.coherent_transmission_matrix(frequency, eps_1, eps_2, mu1, npol)
 
-        def diffuse_reflection_matrix(self, frequency, eps_1, mu_s, mu_i, dphi, npol):
+        def diffuse_reflection_matrix(self, frequency, eps_1, mu_s, mu_i, phi_s, phi_i=0, npol=2):
             eps_2 = self.permittivity(frequency)
             if eps_2 is None:
                 raise SMRTError(f"No permittivity_model have been given to the substrate '{interface_cls!s}'")
-            return self.interface_inst.diffuse_reflection_matrix(frequency, eps_1, eps_2, mu_s, mu_i, dphi, npol)
+            return self.interface_inst.diffuse_reflection_matrix(
+                frequency, eps_1, eps_2, mu_s, mu_i, phi_s=phi_s, phi_i=phi_i, npol=npol
+            )
 
         def ft_even_diffuse_reflection_matrix(self, frequency, eps_1, mu_s, mu_i, m_max, npol):
             eps_2 = self.permittivity(frequency)

@@ -77,7 +77,7 @@ class SmallPerturbationMethod(KirchoffApproximationCoherentInterfaceMixin, Hemis
                 f"Recommended is  ks / kl  < 0.3 / sqrt(2) . Here ks/kl={ks / kl}."
             )
 
-    def diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, dphi, npol, debug=False):
+    def diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, phi_s, phi_i=0, npol=2, debug=False):
         """Compute the diffuse reflection coefficients.
 
         Coefficients are calculated for an array of incident, scattered and azimuth angles in medium 1. Medium 2 is
@@ -89,13 +89,14 @@ class SmallPerturbationMethod(KirchoffApproximationCoherentInterfaceMixin, Hemis
             eps_2: Permittivity of the other medium.
             mu_s: Array of cosine of scattered angles.
             mu_i: Array of cosine of incident angles.
-            dphi: Azimuth angles.
+            phi_s: Scattering azimuth angles.
+            phi_i: Incident azimuth angles.
             npol: Number of polarization.
 
         Returns:
             The reflection matrix.
         """
-        mu_s, sin_s, mu_i, sin_i, cosphi, sinphi = vectorize_angles(mu_s, mu_i, dphi)
+        mu_s, sin_s, mu_i, sin_i, cosphi, sinphi = vectorize_angles(mu_s, mu_i, phi_s - phi_i)
 
         rvs, rhs, _ = fresnel_reflection_coefficients(eps_1, eps_2, mu_s)
         rvi, rhi, _ = fresnel_reflection_coefficients(eps_1, eps_2, mu_i)
@@ -337,12 +338,12 @@ class SmallPerturbationMethod(KirchoffApproximationCoherentInterfaceMixin, Hemis
 
     def ft_even_diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, m_max, npol):
         def reflection_function(dphi):
-            return self.diffuse_reflection_matrix(frequency, eps_1, eps_2, mu_s, mu_i, dphi, npol=npol)
+            return self.diffuse_reflection_matrix(frequency, eps_1, eps_2, mu_s, mu_i, phi_s=dphi, npol=npol)
 
         print("to be optimised")
         return generic_ft_even_matrix(reflection_function, m_max, nsamples=256)
 
-    def diffuse_transmission_matrix(self, frequency, eps_1, eps_2, mu_t, mu_i, dphi, npol):
+    def diffuse_transmission_matrix(self, frequency, eps_1, eps_2, mu_t, mu_i, phi_t, phi_i=0, npol=2):
         """Compute the diffuse transmission coefficients.
 
         Coefficient are calculated for an array of incident, scattered and azimuth angles in medium 1. Medium 2 is
@@ -354,14 +355,15 @@ class SmallPerturbationMethod(KirchoffApproximationCoherentInterfaceMixin, Hemis
             eps_2: Permittivity of the other medium.
             mu_t: Array of cosine of transmitted wave angles.
             mu_i: Array of cosine of incident angles.
-            dphi: Azimuth angles.
+            phi_t: Transmitted azimuth angles.
+            phi_i: Incident azimuth angles.
             npol: Number of polarization.
 
         Returns:
             The transmission matrix.
         """
         # See from eq 63 in Chen 2011 (Random Media)
-        mu_t, sin_t, mu_i, sin_i, cosphi, sinphi = vectorize_angles(mu_t, mu_i, dphi)
+        mu_t, sin_t, mu_i, sin_i, cosphi, sinphi = vectorize_angles(mu_t, mu_i, phi_t - phi_i)
 
         k0 = WAVENUMBER_PER_HZ * frequency
         k = k0 * np.sqrt(eps_1)  # in medium 1
@@ -433,7 +435,7 @@ class SmallPerturbationMethod(KirchoffApproximationCoherentInterfaceMixin, Hemis
 
     def ft_even_diffuse_transmission_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, m_max, npol):
         def transmission_function(dphi):
-            return self.diffuse_transmission_matrix(frequency, eps_1, eps_2, mu_s, mu_i, dphi, npol=npol)
+            return self.diffuse_transmission_matrix(frequency, eps_1, eps_2, mu_s, mu_i, phi_t=dphi, npol=npol)
 
         print("to be optimised")
         return generic_ft_even_matrix(transmission_function, m_max, nsamples=256)

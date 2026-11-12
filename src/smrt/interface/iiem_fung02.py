@@ -118,7 +118,7 @@ class IIEM_Fung02(IEM_Fung92):
 
         return Rv_t, Rh_t
 
-    def diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, dphi, npol):
+    def diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, phi_s, phi_i=0, npol=2):
         """Compute the diffuse reflection coefficients.
 
         Coefficients are calculated for an array of incident, scattered and azimuth angles in medium 1. Medium 2 is
@@ -130,7 +130,8 @@ class IIEM_Fung02(IEM_Fung92):
             eps_2: Permittivity of the other medium.
             mu_s: Array of cosine of scattered angles.
             mu_i: Array of cosine of incident angles.
-            dphi: Azimuth angles.
+            phi_s: Scattering azimuth angles.
+            phi_i: Incident azimuth angles.
             npol: Number of polarization.
 
         Returns:
@@ -138,7 +139,7 @@ class IIEM_Fung02(IEM_Fung92):
         """
         mu_i = np.atleast_1d(_clip_mu(mu_i))[np.newaxis, np.newaxis, :, np.newaxis]
         mu_s = np.atleast_1d(_clip_mu(mu_s))[np.newaxis, :, np.newaxis, np.newaxis]
-        dphi = np.atleast_1d(dphi)[:, np.newaxis, np.newaxis, np.newaxis]
+        dphi = np.atleast_1d(phi_s - phi_i)[:, np.newaxis, np.newaxis, np.newaxis]
 
         # incident wavenumber
         k01 = WAVENUMBER_PER_HZ * frequency * np.sqrt(eps_1).real
@@ -238,11 +239,11 @@ class IIEM_Fung02(IEM_Fung92):
 
     def ft_even_diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, m_max, npol):
         def reflection_function(dphi):
-            return self.diffuse_reflection_matrix(frequency, eps_1, eps_2, mu_s, mu_i, dphi, npol=npol)
+            return self.diffuse_reflection_matrix(frequency, eps_1, eps_2, mu_s, mu_i, phi_s=dphi, npol=npol)
 
         return generic_ft_even_matrix(reflection_function, m_max, nsamples=256)
 
-    def diffuse_transmission_matrix(self, frequency, eps_1, eps_2, mu_t, mu_i, dphi, npol):
+    def diffuse_transmission_matrix(self, frequency, eps_1, eps_2, mu_t, mu_i, phi_t, phi_i=0, npol=2):
         """Compute the transmission coefficients for the azimuthal mode m and for an array of incidence angles (given by
         their cosine) in medium 1. Medium 2 is where the beam is transmitted.
 

@@ -282,7 +282,15 @@ class IterativeSecondOrder(RTSolverBase):
         substrate = snowpack.substrate
 
         interface_l = _InterfaceProperties(
-            sensor.frequency, snowpack.interfaces, substrate, effective_permittivity, mu0, npol, nlayer, np.pi
+            sensor.frequency,
+            snowpack.interfaces,
+            substrate,
+            effective_permittivity,
+            mu0,
+            npol,
+            nlayer,
+            phi_s=np.pi,
+            phi_i=0,
         )
 
         # check if layer to ground interaction can to be calculated if True, need bistatic coef from diffuse matrix

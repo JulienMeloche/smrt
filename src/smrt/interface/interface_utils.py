@@ -106,7 +106,7 @@ class HemisphericalIntegrationMixin(metaclass=ABCMeta):
         mu, weights = cached_roots_legendre(n_mu, 0, 1)
         dphi = np.linspace(0, TWO_PI, n_phi, endpoint=False)
 
-        R = self.diffuse_reflection_matrix(frequency, eps_1, eps_2, mu, mu_i, dphi, 2)
+        R = self.diffuse_reflection_matrix(frequency, eps_1, eps_2, mu, mu_i, phi_s=dphi, phi_i=0, npol=2)
 
         # integrate the pola first, then the azimuth and last the mu
         R = R.values.sum(axis=(0, 2))
@@ -118,7 +118,7 @@ class HemisphericalIntegrationMixin(metaclass=ABCMeta):
         mu, weights = cached_roots_legendre(n_mu, 0, 1)
         dphi = np.linspace(0, TWO_PI, n_phi, endpoint=False)
 
-        T = self.diffuse_transmission_matrix(frequency, eps_1, eps_2, mu, mu_i, dphi, 2)
+        T = self.diffuse_transmission_matrix(frequency, eps_1, eps_2, mu, mu_i, phi_t=dphi, npol=2)
 
         # integrate the pola first, then the azimuth and last the mu
         T = T.values.sum(axis=(0, 2))

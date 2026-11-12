@@ -13,7 +13,7 @@ def test_iem_fung02():
 
     mu = np.cos(np.deg2rad([30, 50, 60]))
 
-    R = iem_fung.diffuse_reflection_matrix(frequency, 1, eps_r, mu, mu, np.pi, 3)
+    R = iem_fung.diffuse_reflection_matrix(frequency, 1, eps_r, mu, mu, phi_s=np.pi, npol=3)
     sigma_vv = dB(4 * np.pi * mu * R[0, 0, 0].diagonal())
     sigma_hh = dB(4 * np.pi * mu * R[1, 1, 0].diagonal())
 

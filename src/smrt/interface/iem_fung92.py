@@ -85,7 +85,7 @@ class IEM_Fung92(
         Rv, Rh, _ = fresnel_reflection_coefficients(eps_1, eps_2, mu_i)
         return Rv, Rh
 
-    def diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, dphi, npol, debug=False):
+    def diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, phi_s, phi_i=0, npol=2, debug=False):
         """Compute the diffuse reflection coefficients.
 
         Coefficients are calculated for an array of incident, scattered and azimuth angles in medium 1. Medium 2 is
@@ -97,7 +97,8 @@ class IEM_Fung92(
             eps_2: Permittivity of the other medium.
             mu_s: Array of cosine of scattered angles.
             mu_i: Array of cosine of incident angles.
-            dphi: Azimuth angles.
+            phi_s: Scattering azimuth angles.
+            phi_i: Incident azimuth angles.
             npol: Number of polarization.
 
         Returns:
@@ -105,6 +106,7 @@ class IEM_Fung92(
         """
         mu_s = np.atleast_1d(mu_s)
         mu_i = np.atleast_1d(mu_i)
+        dphi = phi_s - phi_i
 
         if not np.allclose(mu_s, mu_i) or not np.allclose(dphi, np.pi):
             raise NotImplementedError(
@@ -197,7 +199,7 @@ class IEM_Fung92(
 
         diffuse_refl_coeff = smrt_matrix.zeros((npol, m_max + 1, len(mu_i)))
 
-        gamma = self.diffuse_reflection_matrix(frequency, eps_1, eps_2, mu_s, mu_i, dphi=np.pi, npol=npol)
+        gamma = self.diffuse_reflection_matrix(frequency, eps_1, eps_2, mu_s, mu_i, phi_s=np.pi, phi_i=0, npol=npol)
 
         for m in range(m_max + 1):
             if m == 0:

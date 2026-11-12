@@ -55,11 +55,12 @@ def passive(frequency, theta, polarization=None, channel_map=None, name=None):
 
     sensor = Sensor(
         frequency,
-        None,
-        theta,
-        None,
-        None,
-        polarization,
+        theta_inc_deg=None,
+        phi_inc_deg=None,
+        polarization_inc=None,
+        theta_deg=theta,
+        phi_deg=0,
+        polarization=polarization,
         channel_map=channel_map,
         name=name,
     )
@@ -72,9 +73,10 @@ def passive(frequency, theta, polarization=None, channel_map=None, name=None):
 def active(
     frequency,
     theta_inc,
+    phi_inc=None,
+    polarization_inc=None,
     theta=None,
     phi=None,
-    polarization_inc=None,
     polarization=None,
     channel_map=None,
     name=None,
@@ -92,10 +94,12 @@ def active(
 
         theta_inc: incident angle in degrees from the vertical.
 
+        phi_inc: viewing azimuth angle in degrees of the incident direction. By default, it is 0.
+
         theta: viewing zenith angle in degrees from the vertical. By default, it is equal to theta_inc which corresponds
             to the backscatter direction.
 
-        phi: viewing azimuth angle in degrees from the incident direction. By default, it is pi which corresponds
+        phi: viewing azimuth angle in degrees of the viewing direction. By default, it is pi which corresponds
             to the backscatter direction.
 
         polarization_inc: list of polarizations of the incidence wave ('H' or
@@ -129,6 +133,9 @@ def active(
     if theta is None:
         theta = theta_inc
 
+    if phi_inc is None:
+        phi_inc = 0.0
+
     if phi is None:
         phi = 180.0
 
@@ -141,9 +148,10 @@ def active(
     sensor = Sensor(
         frequency,
         theta_inc_deg=theta_inc,
+        phi_inc_deg=phi_inc,
+        polarization_inc=polarization_inc,
         theta_deg=theta,
         phi_deg=phi,
-        polarization_inc=polarization_inc,
         polarization=polarization,
         channel_map=channel_map,
         name=name,

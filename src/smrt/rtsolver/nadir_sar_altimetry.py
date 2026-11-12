@@ -617,7 +617,7 @@ class NadirSARAltimetry(object):
         #  We neglect mu_i.
         backward_scattering = np.array(
             [
-                em.phase(mu_s=-1.0, mu_i=1.0, dphi=np.pi, npol=2)[0, 0].squeeze().real / (4 * np.pi)
+                em.phase(mu_s=-1.0, mu_i=1.0, phi_s=np.pi, npol=2)[0, 0].squeeze().real / (4 * np.pi)
                 for em in self.emmodels
             ]
         )  # 4pi normalisation coming from Eq. 2 in Picard et al. 2018
@@ -687,7 +687,7 @@ class NadirSARAltimetry(object):
                 # incoherent
                 cm(
                     i.diffuse_reflection_matrix(
-                        self.sensor.frequency, eps_1, eps_2, mu_s=mu, mu_i=mu, dphi=np.pi, npol=2
+                        self.sensor.frequency, eps_1, eps_2, mu_s=mu, mu_i=mu, phi_s=np.pi, npol=2
                     )
                 )
                 / eps_1.real,
@@ -747,7 +747,7 @@ class NadirSARAltimetry(object):
                             lower_eps[-1],
                             mu_s=mu_last_layer,
                             mu_i=mu_last_layer,
-                            dphi=np.pi,
+                            phi_s=np.pi,
                             npol=2,
                         )
                     )

@@ -140,7 +140,8 @@ class GeneralizedRayleighGansBase(GenericFTPhaseMixin):
         elif npol == 3:
             return self.n0 * smrt_matrix(np.array([ks_vv, ks_hh, 0.5 * (ks_vv * ks_hh)]))
 
-    def phase(self, mu_s, mu_i, dphi, npol=2):
+    def phase(self, mu_s, mu_i, phi_s, phi_i=0, npol=2):
+        dphi = phi_s - phi_i
         fvv, fvh, fhv, fhh = self.scattering_amplitude(mu_s, mu_i, dphi, compute_cross_product=True)
 
         if len(fvv.shape) == 4:

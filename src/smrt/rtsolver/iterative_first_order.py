@@ -207,7 +207,7 @@ def compute_intensity(snowpack, emmodels, sensor, interfaces, substrate, effecti
     #         - [3]: Zeroth order contribution
     # """
     nlayer = snowpack.nlayer
-    dphi = np.pi
+    assert np.allclose(sensor.phi - sensor.phi_inc, np.pi)
     n = len(mu0)  # number of streams
 
     # no need for 3x3 in first order solution
@@ -221,7 +221,8 @@ def compute_intensity(snowpack, emmodels, sensor, interfaces, substrate, effecti
         mu0,
         npol,
         nlayer,
-        dphi,
+        sensor.phi,
+        sensor.phi_inc,
     )
 
     # get list of thickness for each layer
@@ -281,7 +282,7 @@ def compute_intensity(snowpack, emmodels, sensor, interfaces, substrate, effecti
         mus_sym = np.concatenate([-mus[layer], mus[layer]])
         # Note that the phase calculation is inefficiant as it calculates all combinations of (mus_sym, mus_sym).
         # TODO: Solving this issue would require to rewrite all the phase methods.
-        phases = emmodels[layer].phase(mus_sym, mus_sym, dphi, npol).values
+        phases = emmodels[layer].phase(mus_sym, mus_sym, phi_s=sensor.phi, phi_i=sensor.phi_inc, npol=npol).values
 
         # 1/4pi normalization of the RT equation for SMRT
         # applied to phase here, interface and substrate already have the smrt_norm
@@ -452,7 +453,7 @@ class _InterfaceProperties(object):
     #     mu (dict): Cosine of refraction angles for each layer.
     # """
 
-    def __init__(self, frequency, interfaces, substrate, permittivity, mu0, npol, nlayer, dphi):
+    def __init__(self, frequency, interfaces, substrate, permittivity, mu0, npol, nlayer, phi_s, phi_i):
         self.Rtop_coh = dict()
         # self.Rtop_diff = dict()
         self.Ttop_coh = dict()
@@ -471,7 +472,9 @@ class _InterfaceProperties(object):
         # index -1 refers to air layer
         self.Tbottom_coh[-1] = interfaces[0].coherent_transmission_matrix(frequency, 1, permittivity[0], mu0, npol)
         self.Tbottom_diff[-1] = (
-            interfaces[0].diffuse_transmission_matrix(frequency, 1, permittivity[0], self.mu[0], self.mu[-1], 0, npol)
+            interfaces[0].diffuse_transmission_matrix(
+                frequency, 1, permittivity[0], self.mu[0], self.mu[-1], phi_t=0, npol=npol
+            )
             if hasattr(interfaces[0], "diffuse_transmission_matrix") / permittivity[0].real
             else smrt_matrix(0)
         )
@@ -479,7 +482,9 @@ class _InterfaceProperties(object):
         # air-snow DOWN
         self.Rbottom_coh[-1] = interfaces[0].specular_reflection_matrix(frequency, 1, permittivity[0], mu0, npol)
         self.Rbottom_backscatter[-1] = (
-            interfaces[0].diffuse_reflection_matrix(frequency, 1, permittivity[0], mu0, mu0, dphi, npol)
+            interfaces[0].diffuse_reflection_matrix(
+                frequency, 1, permittivity[0], mu0, mu0, phi_s=phi_s, phi_i=phi_i, npol=npol
+            )
             if hasattr(interfaces[0], "diffuse_reflection_matrix")
             else smrt_matrix(0)
         )
@@ -497,7 +502,9 @@ class _InterfaceProperties(object):
             # self.Rtop_coh[l] = interfaces[l].specular_reflection_matrix(frequency, eps_l, eps_lm1, self.mu[l], npol)
 
             # self.Rtop_diff[l] = (
-            #     interfaces[l].diffuse_reflection_matrix(frequency, eps_l, eps_lm1, self.mu[l], self.mu[l], dphi, npol)
+            #     interfaces[l].diffuse_reflection_matrix(
+            #         frequency, eps_l, eps_lm1, self.mu[l], self.mu[l], phi_s=dphi, npol=npol
+            #     )
             #     if hasattr(interfaces[l], "diffuse_reflection_matrix")
             #     else smrt_matrix(0)
             # )
@@ -516,7 +523,7 @@ class _InterfaceProperties(object):
 
                 # other than flat interface
                 self.Rbottom_backscatter[layer] = interfaces[layer + 1].diffuse_reflection_matrix(
-                    frequency, eps_l, eps_lp1, self.mu[layer], self.mu[layer], dphi, npol
+                    frequency, eps_l, eps_lp1, self.mu[layer], self.mu[layer], phi_s=phi_s, phi_i=phi_i, npol=npol
                 )
 
                 self.Tbottom_coh[layer] = interfaces[layer + 1].coherent_transmission_matrix(
@@ -524,7 +531,7 @@ class _InterfaceProperties(object):
                 )
                 self.Tbottom_diff[layer] = (
                     interfaces[layer + 1].diffuse_transmission_matrix(
-                        frequency, eps_l, eps_lm1, self.mu[layer + 1], self.mu[layer], 0, npol
+                        frequency, eps_l, eps_lm1, self.mu[layer + 1], self.mu[layer], phi_t=0, npol=npol
                     )
                     if hasattr(interfaces[layer + 1], "diffuse_transmission_matrix") * (eps_l.real / eps_lm1.real)
                     else smrt_matrix(0)
@@ -534,7 +541,9 @@ class _InterfaceProperties(object):
                 self.Rbottom_coh[layer] = substrate.specular_reflection_matrix(frequency, eps_l, self.mu[layer], npol)
 
                 self.Rbottom_backscatter[layer] = (
-                    substrate.diffuse_reflection_matrix(frequency, eps_l, self.mu[layer], self.mu[layer], dphi, npol)
+                    substrate.diffuse_reflection_matrix(
+                        frequency, eps_l, self.mu[layer], self.mu[layer], phi_s=phi_s, phi_i=phi_i, npol=npol
+                    )
                     if hasattr(substrate, "diffuse_reflection_matrix")
                     else smrt_matrix(0)
                 )

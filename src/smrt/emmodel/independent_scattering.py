@@ -106,9 +106,9 @@ class IndependentScattering(object):
         """Calculate the absorption coefficient."""
         return 2 * self.k0 * np.sqrt(self._effective_permittivity).imag
 
-    def phase(self, mu_s, mu_i, dphi, npol=2):
+    def phase(self, mu_s, mu_i, phi_s, phi_i=0, npol=2):
         """Independant scattering phase function."""
-        p = self._optimized_compute_average(lambda em: em.phase(mu_s, mu_i, dphi, npol=npol))
+        p = self._optimized_compute_average(lambda em: em.phase(mu_s, mu_i, phi_s=phi_s, phi_i=phi_i, npol=npol))
         return p
 
     def ft_even_phase(self, mu_s, mu_i, m_max, npol=None):

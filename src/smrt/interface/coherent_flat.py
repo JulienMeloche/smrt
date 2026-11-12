@@ -98,7 +98,7 @@ class CoherentFlat(object):
 
         return reflection_coefficients
 
-    def diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, dphi, npol):
+    def diffuse_reflection_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, phi_s, phi_i=0, npol=2):
         return smrt_matrix(0)
 
     def coherent_transmission_matrix(self, frequency, eps_1, eps_2, mu1, npol):
@@ -161,5 +161,5 @@ class CoherentFlat(object):
 
         return R01_v, R01_h, R1t_v, R1t_h, exp_kd, exp_2kd, mu_t
 
-    def diffuse_transmission_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, dphi, npol):
+    def diffuse_transmission_matrix(self, frequency, eps_1, eps_2, mu_s, mu_i, phi_t, phi_i=0, npol=2):
         return smrt_matrix(0)
